@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>المساعد الصوتي | الإصدار النهائي</title>
+    <title>المساعد الصوتي | نسخة محسنة</title>
     <script type="importmap">
       { "imports": { "@google/generative-ai": "https://esm.run/@google/generative-ai" } }
     </script>
@@ -11,7 +11,7 @@
         @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@700&display=swap');
         
         :root {
-            --background-color-light: #ffffff; --main-color-light: #000000;
+            --background-color-light: #f4f4f9; --main-color-light: #4a4a4a;
             --border-color-light: #e0e0e0; --text-color-light: #aaaaaa;
             
             --background-color-space: #000010; --main-color-space: #0d47a1;
@@ -82,51 +82,39 @@
         body.space-theme #talkButton.listening { background: #ff4081; }
 
         @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(211, 47, 47, 0.7); } 70% { box-shadow: 0 0 0 20px rgba(211, 47, 47, 0); } 100% { box-shadow: 0 0 0 0 rgba(211, 47, 47, 0); } }
-
-        #stopButton, #theme-toggle {
+        
+        .icon-button {
             width: 50px; height: 50px; border-radius: 50%; cursor: pointer;
             display: flex; justify-content: center; align-items: center;
-            font-size: 24px; font-weight: bold; transition: all 0.2s ease;
+            transition: all 0.2s ease; background-color: transparent;
         }
+        .icon-button svg { width: 24px; height: 24px; }
+        
         #stopButton:hover { transform: scale(1.1) rotate(90deg); }
+        
+        body.light-theme .icon-button { border: 2px solid var(--border-color-light); }
+        body.light-theme .icon-button svg { fill: #ccc; }
+        body.light-theme .icon-button:hover { border-color: var(--main-color-light); }
+        body.light-theme .icon-button:hover svg { fill: var(--main-color-light); }
+        
+        body.space-theme .icon-button { border: 2px solid var(--border-color-space); }
+        body.space-theme .icon-button svg { fill: var(--border-color-space); }
+        body.space-theme .icon-button:hover { border-color: #fff; }
+        body.space-theme .icon-button:hover svg { fill: #fff; }
+        
+        #theme-toggle { position: absolute; top: 20px; right: 20px; z-index: 20; }
         #theme-toggle:hover { transform: scale(1.1) rotate(360deg); }
-        
-        body.light-theme #stopButton, body.light-theme #theme-toggle {
-            background-color: transparent; color: #ccc; border: 2px solid var(--border-color-light);
-        }
-        body.light-theme #stopButton:hover, body.light-theme #theme-toggle:hover { border-color: var(--main-color-light); color: var(--main-color-light); }
-        
-        body.space-theme #stopButton, body.space-theme #theme-toggle {
-            background-color: transparent; color: var(--border-color-space); border: 2px solid var(--border-color-space);
-        }
-        body.space-theme #stopButton:hover, body.space-theme #theme-toggle:hover { border-color: #fff; color: #fff; }
+        #theme-toggle .moon-icon { display: none; }
+        #theme-toggle .sun-icon { display: block; }
+        body.space-theme #theme-toggle .moon-icon { display: block; }
+        body.space-theme #theme-toggle .sun-icon { display: none; }
 
         .status { z-index: 10; position: absolute; top: 40px; font-size: 1.2em; transition: color 0.5s; }
         body.light-theme .status { color: var(--text-color-light); }
         body.space-theme .status { color: var(--text-color-space); }
-
-        #name-modal {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background-color: rgba(0,0,0,0.7); display: flex; justify-content: center;
-            align-items: center; z-index: 100; backdrop-filter: blur(5px);
-        }
-        .modal-content {
-            background-color: #fff; padding: 30px; border-radius: 15px; text-align: center;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2); width: 90%; max-width: 400px;
-        }
-        .modal-content h2 { margin-top: 0; color: #333; }
-        .modal-content input {
-            width: 80%; padding: 12px; margin: 15px 0; border-radius: 8px;
-            border: 2px solid #ddd; text-align: center; font-size: 1.1em;
-            font-family: 'Cairo', sans-serif;
-        }
-        .modal-content button {
-            padding: 10px 30px; border: none; background-color: #0d47a1;
-            color: white; border-radius: 8px; cursor: pointer; font-size: 1em;
-            font-family: 'Cairo', sans-serif; transition: background-color 0.2s;
-        }
-        .modal-content button:hover { background-color: #1976d2; }
-        #name-error { color: #d32f2f; height: 20px; font-size: 0.9em; }
+        
+        /* Modal Styles - No changes needed here */
+        #name-modal{position:fixed;top:0;left:0;width:100%;height:100%;background-color:rgba(0,0,0,0.7);display:flex;justify-content:center;align-items:center;z-index:100;backdrop-filter:blur(5px)}.modal-content{background-color:#fff;padding:30px;border-radius:15px;text-align:center;box-shadow:0 10px 30px rgba(0,0,0,0.2);width:90%;max-width:400px}.modal-content h2{margin-top:0;color:#333}.modal-content input{width:80%;padding:12px;margin:15px 0;border-radius:8px;border:2px solid #ddd;text-align:center;font-size:1.1em;font-family:'Cairo',sans-serif}.modal-content button{padding:10px 30px;border:none;background-color:#0d47a1;color:white;border-radius:8px;cursor:pointer;font-size:1em;font-family:'Cairo',sans-serif;transition:background-color .2s}.modal-content button:hover{background-color:#1976d2}#name-error{color:#d32f2f;height:20px;font-size:.9em}
     </style>
 </head>
 <body>
@@ -144,6 +132,11 @@
     
     <div class="status" id="status">اضغط للتحدث</div>
     
+    <button id="theme-toggle" class="icon-button" title="تغيير الواجهة">
+        <svg class="sun-icon" viewBox="0 0 24 24"><path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM12 9c1.65 0 3 1.35 3 3s-1.35 3-3 3-3-1.35-3-3 1.35-3 3-3zm0-7v4h-2V2h2zm0 18v-4h2v4h-2zm-9-9h4v2H3v-2zm18 0h-4v2h4v-2zM4.22 4.22l2.83 2.83-1.41 1.41L2.81 5.63 4.22 4.22zm12.73 12.73l2.83 2.83 1.41-1.41-2.83-2.83-1.41 1.41zM5.63 19.78l1.41-1.41 2.83 2.83-1.41 1.41-2.83-2.83zM16.96 5.63l1.41 1.41 2.83-2.83-1.41-1.41-2.83 2.83z"/></svg>
+        <svg class="moon-icon" viewBox="0 0 24 24"><path d="M9.37 5.51A7.35 7.35 0 0 0 9.1 7.5c0 4.08 3.32 7.4 7.4 7.4.68 0 1.35-.09 2-.26-1.43.91-3.06 1.36-4.78 1.36-4.6 0-8.35-3.75-8.35-8.35 0-1.72.45-3.35 1.36-4.78z"/></svg>
+    </button>
+    
     <div id="venom-container">
         <div class="blob"></div><div class="blob"></div><div class="blob"></div><div class="blob"></div>
     </div>
@@ -151,11 +144,12 @@
     <canvas id="space-canvas"></canvas>
     
     <div class="controls">
-        <button id="stopButton" title="إيقاف الكل">X</button>
+        <button id="stopButton" class="icon-button" title="إيقاف الكل">
+            <svg viewBox="0 0 24 24"><path d="M6 6h12v12H6z"></path></svg>
+        </button>
         <button id="talkButton" title="اضغط للتحدث">
             <svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.49 6-3.31 6-6.72h-1.7z"/></svg>
         </button>
-        <button id="theme-toggle" title="تغيير الواجهة"></button>
     </div>
     
     <svg style="position:absolute; width:0; height:0;"><defs><filter id="goo"><feGaussianBlur in="SourceGraphic" stdDeviation="15" result="blur" /><feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 20 -9" result="goo" /><feBlend in="SourceGraphic" in2="goo" /></filter></defs></svg>
@@ -164,7 +158,7 @@
         import { GoogleGenerativeAI } from "@google/generative-ai";
 
         // --- الخطوة الأهم: ضع مفتاح API الخاص بك هنا ---
-        const API_KEY = "AIzaSyAnAUCajzM7PqrM6k5znxaOAKs3R1kHzWk"; // <--- ضع مفتاحك الذي كان في الكود الأصلي هنا
+        const API_KEY = "AIzaSyAnAUCajzM7PqrM6k5znxaOAKs3R1kHzWk";
         
         const genAI = new GoogleGenerativeAI(API_KEY);
         let model, chat;
@@ -182,6 +176,7 @@
         let audioContext, analyser, animationFrameId, isListening = false, currentVolume = 0, userName = '';
         let mousePos = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
         let spaceAnimationId;
+        let animationActivity = 1.0; // للتحكم في سرعة حركة الكواكب
 
         function initializeChat(name) {
             userName = name;
@@ -213,10 +208,8 @@
             } else {
                 nameModal.style.display = 'flex';
             }
-            
             const savedTheme = localStorage.getItem('theme') || 'light-theme';
             setTheme(savedTheme);
-            
             animationLoop();
         });
 
@@ -224,12 +217,8 @@
             document.body.className = theme;
             localStorage.setItem('theme', theme);
             if (theme === 'space-theme') {
-                themeToggleButton.textContent = '☀️';
-                themeToggleButton.title = 'الواجهة العادية';
                 if (!spaceAnimationId) initSpaceAnimation();
             } else {
-                themeToggleButton.textContent = '🚀';
-                themeToggleButton.title = 'واجهة الفضاء';
                 if (spaceAnimationId) {
                     cancelAnimationFrame(spaceAnimationId);
                     spaceAnimationId = null;
@@ -251,82 +240,74 @@
                     const blobCenter = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
                     const angle = time * 0.001 * (index * 0.5 + 1);
                     const waveX = Math.sin(angle) * 20, waveY = Math.cos(angle) * 20;
-                    const dxMouse = blobCenter.x - mousePos.x, dyMouse = blobCenter.y - mousePos.y;
-                    const distMouse = Math.sqrt(dxMouse * dxMouse + dyMouse * dyMouse);
-                    const pushForce = Math.max(0, 1 - distMouse / 150) * 100;
-                    const pushX = (dxMouse / distMouse || 0) * pushForce, pushY = (dyMouse / distMouse || 0) * pushForce;
                     const volumeScale = 1 + (currentVolume / 128) * 0.5;
-                    const chaos = currentVolume * 0.2;
-                    const chaosX = (Math.random() - 0.5) * chaos, chaosY = (Math.random() - 0.5) * chaos;
-                    blob.style.transform = `translate(${waveX + pushX + chaosX}px, ${waveY + pushY + chaosY}px) scale(${volumeScale})`;
+                    blob.style.transform = `translate(${waveX}px, ${waveY}px) scale(${volumeScale})`;
                 });
             }
             animationFrameId = requestAnimationFrame(animationLoop);
         }
 
-        let stars = [], shootingStars = [];
+        let stars = [], planets = [];
         function initSpaceAnimation() {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
             stars = [];
+            planets = [];
             for(let i = 0; i < 400; i++) {
                 stars.push({
                     x: Math.random() * canvas.width, y: Math.random() * canvas.height,
-                    vx: (Math.random() - 0.5) * 0.1, vy: (Math.random() - 0.5) * 0.1,
-                    radius: Math.random() * 1.5,
-                    alpha: 0.5 + Math.random() * 0.5
+                    vx: (Math.random() - 0.5) * 0.2, vy: (Math.random() - 0.5) * 0.2,
+                    radius: Math.random() * 1.5, alpha: 0.5 + Math.random() * 0.5
                 });
             }
+            const planetColors = ['#2e7d32', '#d32f2f', '#f57c00', '#5e35b1', '#0277bd'];
+            for(let i = 0; i < 5; i++) {
+                 planets.push({
+                    x: Math.random() * canvas.width, y: Math.random() * canvas.height,
+                    vx: (Math.random() - 0.5) * 0.1, vy: (Math.random() - 0.5) * 0.1,
+                    radius: Math.random() * 20 + 10, color: planetColors[i]
+                });
+            }
+
             if (!spaceAnimationId) animateSpace();
         }
 
         function animateSpace() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            stars.forEach(star => {
-                const dx = star.x - mousePos.x;
-                const dy = star.y - mousePos.y;
-                const dist = Math.sqrt(dx * dx + dy * dy);
-                if (dist < 150) {
-                    star.vx += (dx / dist) * 0.05;
-                    star.vy += (dy / dist) * 0.05;
-                }
+            
+            // تحديث مستوى النشاط بسلاسة
+            const targetActivity = isListening ? 4.0 : 1.0;
+            animationActivity += (targetActivity - animationActivity) * 0.05;
 
-                const volumeBoost = 1 + (currentVolume / 128) * 2;
-                star.x += star.vx * volumeBoost;
-                star.y += star.vy * volumeBoost;
-
-                star.vx *= 0.99; star.vy *= 0.99;
+            // رسم الكواكب
+            planets.forEach(p => {
+                p.x += p.vx * animationActivity;
+                p.y += p.vy * animationActivity;
+                if (p.x < -p.radius) p.x = canvas.width + p.radius; if (p.x > canvas.width + p.radius) p.x = -p.radius;
+                if (p.y < -p.radius) p.y = canvas.height + p.radius; if (p.y > canvas.height + p.radius) p.y = -p.radius;
                 
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                ctx.fillStyle = p.color;
+                ctx.shadowColor = p.color;
+                ctx.shadowBlur = 20;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+            });
+            
+            // رسم النجوم
+            stars.forEach(star => {
+                const volumeBoost = 1 + (currentVolume / 128);
+                star.x += star.vx * volumeBoost * animationActivity;
+                star.y += star.vy * volumeBoost * animationActivity;
                 if (star.x < 0) star.x = canvas.width; if (star.x > canvas.width) star.x = 0;
                 if (star.y < 0) star.y = canvas.height; if (star.y > canvas.height) star.y = 0;
-
                 ctx.beginPath();
                 ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
                 ctx.fillStyle = `rgba(255, 255, 255, ${star.alpha})`;
                 ctx.fill();
             });
 
-            if (Math.random() < 0.05) { // فرصة ظهور شهاب
-                shootingStars.push({
-                    x: Math.random() * canvas.width, y: 0,
-                    len: Math.random() * 80 + 20,
-                    speed: Math.random() * 5 + 5,
-                    alpha: 1
-                });
-            }
-
-            shootingStars.forEach((ss, index) => {
-                ss.y += ss.speed;
-                ss.alpha *= 0.98;
-                ctx.beginPath();
-                ctx.moveTo(ss.x, ss.y);
-                ctx.lineTo(ss.x, ss.y - ss.len);
-                ctx.strokeStyle = `rgba(255, 255, 255, ${ss.alpha})`;
-                ctx.lineWidth = 2;
-                ctx.stroke();
-                if (ss.alpha < 0.01) shootingStars.splice(index, 1);
-            });
-            
             spaceAnimationId = requestAnimationFrame(animateSpace);
         }
         window.addEventListener('resize', () => { if(document.body.classList.contains('space-theme')) initSpaceAnimation(); });
@@ -353,7 +334,6 @@
         const speak = (text) => {
             synthesis.cancel();
             if (/[😂😄😆]/.test(text)) { text = "هاهاهاهاها"; }
-            
             const utterance = new SpeechSynthesisUtterance(text);
             const arabicVoice = synthesis.getVoices().find(v => v.lang.startsWith('ar'));
             if (arabicVoice) utterance.voice = arabicVoice;
