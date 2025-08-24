@@ -3,37 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مساعد صوتي ذكي</title>
+    <title>المساعد الصوتي</title>
     <style>
-        /* CSS: لتصميم الصفحة والشخصية المتحركة */
-        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap');
+        /* CSS: لتصميم الواجهة العصرية والشخصية السائلة */
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@700&display=swap');
+
+        :root {
+            --background-color: #ffffff;
+            --main-color: #000000;
+        }
 
         body {
-            background-color: #1a1a1a;
-            color: #f0f0f0;
-            font-family: 'Cairo', sans-serif;
+            background-color: var(--background-color);
+            margin: 0;
+            height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            margin: 0;
             flex-direction: column;
-            text-align: center;
+            font-family: 'Cairo', sans-serif;
+            overflow: hidden;
+        }
+
+        .title {
+            position: absolute;
+            top: 20px;
+            color: #ccc;
+            font-size: 24px;
         }
 
         #venom-container {
-            width: 200px;
-            height: 200px;
+            width: 300px;
+            height: 300px;
             position: relative;
-            margin-bottom: 30px;
+            filter: url('#goo'); /* تطبيق فلتر الـ SVG */
         }
 
         .blob {
             position: absolute;
-            background: #000;
+            background: var(--main-color);
             border-radius: 50%;
-            opacity: 0.8;
-            filter: blur(10px);
+            mix-blend-mode: screen;
         }
 
         /* حالة الحركة الافتراضية (هادئة) */
@@ -43,56 +53,90 @@
         
         /* حالة الحركة عند التحدث */
         #venom-container.speaking .blob {
-            animation: speak 1s infinite alternate;
+            animation: speak 0.8s infinite alternate;
         }
-
-        .blob:nth-child(1) { width: 150px; height: 150px; top: 25px; left: 25px; animation-delay: 0s; }
-        .blob:nth-child(2) { width: 80px; height: 80px; top: 10px; left: 80px; animation-delay: 0.5s; }
-        .blob:nth-child(3) { width: 60px; height: 60px; top: 100px; left: 20px; animation-delay: 1s; }
-        .blob:nth-child(4) { width: 70px; height: 70px; top: 90px; left: 110px; animation-delay: 1.5s; }
+        
+        .blob:nth-child(1) { width: 150px; height: 150px; top: 75px; left: 75px; animation-delay: 0s; }
+        .blob:nth-child(2) { width: 80px; height: 80px; top: 50px; left: 140px; animation-delay: -2s; }
+        .blob:nth-child(3) { width: 100px; height: 100px; top: 130px; left: 60px; animation-delay: -4s; }
+        .blob:nth-child(4) { width: 70px; height: 70px; top: 150px; left: 160px; animation-delay: -6s; }
 
         @keyframes move {
-            0% { transform: translate(0, 0) scale(1); }
-            25% { transform: translate(20px, -15px) scale(1.05); }
-            50% { transform: translate(-10px, 20px) scale(0.95); }
-            75% { transform: translate(-20px, -10px) scale(1.02); }
+            0%   { transform: translate(0, 0) scale(1); }
+            25%  { transform: translate(30px, -25px) scale(1.05); }
+            50%  { transform: translate(-20px, 30px) scale(0.95); }
+            75%  { transform: translate(-30px, -20px) scale(1.02); }
             100% { transform: translate(0, 0) scale(1); }
         }
 
         @keyframes speak {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.15); }
-            100% { transform: scale(1); }
+            0%   { transform: scale(1.0, 1.0); }
+            50%  { transform: scale(1.2, 1.25); }
+            100% { transform: scale(1.0, 1.0); }
         }
 
-        button {
-            padding: 15px 30px;
-            font-size: 18px;
-            font-family: 'Cairo', sans-serif;
-            cursor: pointer;
-            background-color: #007bff;
-            color: white;
+        .controls {
+            position: absolute;
+            bottom: 50px;
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        #talkButton {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
             border: none;
-            border-radius: 5px;
-            transition: background-color 0.3s;
+            background-color: var(--main-color);
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: transform 0.2s ease, background-color 0.2s ease;
+            box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.2);
         }
 
-        button:hover {
-            background-color: #0056b3;
+        #talkButton:hover {
+            transform: scale(1.1);
+        }
+
+        #talkButton.listening {
+            background-color: #d32f2f; /* أحمر عند الاستماع */
         }
         
-        .status {
-            margin-top: 20px;
-            font-size: 1.2em;
-            height: 30px;
+        #talkButton svg {
+            width: 40px;
+            height: 40px;
+            fill: var(--background-color);
+        }
+
+        #stopButton {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: 2px solid #ccc;
+            background-color: transparent;
+            color: #ccc;
+            cursor: pointer;
+            font-size: 24px;
+            font-weight: bold;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.2s ease;
+        }
+
+        #stopButton:hover {
+            border-color: var(--main-color);
+            color: var(--main-color);
         }
     </style>
 </head>
 <body>
+    <h1 class="title">V E N O M</h1>
 
-    <h1>المساعد الصوتي الشبيه بـ "فينوم"</h1>
-    <p>اضغط على الزر لبدء المحادثة</p>
-
+    <!-- الشخصية المتحركة -->
     <div id="venom-container" class="idle">
         <div class="blob"></div>
         <div class="blob"></div>
@@ -100,130 +144,135 @@
         <div class="blob"></div>
     </div>
     
-    <button id="startButton">تحدث الآن</button>
-    <div class="status" id="status"></div>
+    <!-- أزرار التحكم -->
+    <div class="controls">
+        <button id="stopButton" title="إيقاف المحادثة">X</button>
+        <button id="talkButton" title="اضغط للتحدث">
+            <svg viewBox="0 0 24 24">
+                <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.49 6-3.31 6-6.72h-1.7z"/>
+            </svg>
+        </button>
+    </div>
+
+    <!-- فلتر SVG لإعطاء التأثير السائل -->
+    <svg style="position:absolute; width:0; height:0;">
+        <defs>
+            <filter id="goo">
+                <feGaussianBlur in="SourceGraphic" stdDeviation="12" result="blur" />
+                <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 18 -7" result="goo" />
+                <feBlend in="SourceGraphic" in2="goo" />
+            </filter>
+        </defs>
+    </svg>
 
     <script>
         // JavaScript: لإدارة منطق المحادثة والحركة
-        const startButton = document.getElementById('startButton');
-        const statusDiv = document.getElementById('status');
+        const talkButton = document.getElementById('talkButton');
+        const stopButton = document.getElementById('stopButton');
         const venomContainer = document.getElementById('venom-container');
 
-        // التحقق من دعم المتصفح لواجهات برمجة التطبيقات
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         const recognition = SpeechRecognition ? new SpeechRecognition() : null;
         const synthesis = window.speechSynthesis;
-
+        
         if (!recognition) {
-            statusDiv.textContent = "عذراً، متصفحك لا يدعم التعرف على الصوت.";
-            startButton.disabled = true;
+            alert("عذراً، متصفحك لا يدعم خاصية التعرف على الصوت.");
+            talkButton.disabled = true;
         } else {
-            recognition.lang = 'ar-SA'; // تحديد اللغة العربية
-            recognition.continuous = false; // التوقف عن الاستماع بعد أول جملة
-            recognition.interimResults = false; // لا تعرض النتائج المؤقتة
+            recognition.lang = 'ar-SA';
+            recognition.continuous = false;
+            recognition.interimResults = false;
         }
 
         let isListening = false;
 
         const speak = (text) => {
             if (synthesis.speaking) {
-                console.error('...المساعد الصوتي يتحدث بالفعل');
                 return;
             }
-            
             const utterance = new SpeechSynthesisUtterance(text);
-            
-            // محاولة اختيار صوت عربي
             const voices = synthesis.getVoices();
             const arabicVoice = voices.find(voice => voice.lang.startsWith('ar'));
-            if (arabicVoice) {
-                utterance.voice = arabicVoice;
-            }
+            if (arabicVoice) utterance.voice = arabicVoice;
             
             utterance.onstart = () => {
-                statusDiv.textContent = "المساعد يتحدث...";
+                isListening = false;
+                talkButton.classList.remove('listening');
                 venomContainer.classList.remove('idle');
                 venomContainer.classList.add('speaking');
             };
 
             utterance.onend = () => {
-                statusDiv.textContent = "اضغط وتحدث";
                 venomContainer.classList.remove('speaking');
                 venomContainer.classList.add('idle');
-                // ابدأ الاستماع مرة أخرى بعد أن ينتهي من الكلام
-                if(isListening) {
-                   setTimeout(() => recognition.start(), 500);
-                }
             };
-            
+
             synthesis.speak(utterance);
         };
 
-        const startConversation = () => {
-            if (isListening) {
-                recognition.stop();
-                isListening = false;
-                startButton.textContent = "تحدث الآن";
-                statusDiv.textContent = "";
-            } else {
-                isListening = true;
-                startButton.textContent = "أوقف الاستماع";
-                statusDiv.textContent = "استمع إليك...";
-                recognition.start();
-            }
+        const startListening = () => {
+            if (isListening) return;
+            isListening = true;
+            talkButton.classList.add('listening');
+            recognition.start();
         };
 
-        if (recognition) {
-            startButton.addEventListener('click', startConversation);
+        const stopAll = () => {
+            isListening = false;
+            talkButton.classList.remove('listening');
+            if(recognition) recognition.stop();
+            if(synthesis) synthesis.cancel();
+            venomContainer.classList.remove('speaking');
+            venomContainer.classList.add('idle');
+        };
 
-            recognition.onstart = () => {
-                statusDiv.textContent = "استمع إليك...";
-                venomContainer.classList.remove('speaking');
-                venomContainer.classList.add('idle');
-            };
+        if(recognition) {
+            talkButton.addEventListener('click', startListening);
+            stopButton.addEventListener('click', stopAll);
 
-            recognition.onspeechend = () => {
-                recognition.stop();
-                statusDiv.textContent = "جاري تحليل ما قلته...";
+            recognition.onend = () => {
+                isListening = false;
+                talkButton.classList.remove('listening');
             };
 
             recognition.onresult = (event) => {
-                const transcript = event.results[0][0].transcript.trim();
+                const transcript = event.results[0][0].transcript.toLowerCase().trim();
                 handleQuery(transcript);
             };
 
             recognition.onerror = (event) => {
-                statusDiv.textContent = `حدث خطأ: ${event.error}`;
+                console.error("خطأ في التعرف على الصوت:", event.error);
                 isListening = false;
-                startButton.textContent = "تحدث الآن";
+                talkButton.classList.remove('listening');
             };
         }
 
         const handleQuery = (query) => {
-            console.log(`أنت قلت: ${query}`);
-            let response = "لم أفهم ما قلته. هل يمكنك المحاولة مرة أخرى؟";
+            let response = "لم أفهم تماماً. هل يمكنك إعادة صياغة سؤالك؟";
 
-            if (query.includes("مرحبا") || query.includes("أهلا")) {
-                response = "أهلاً بك! كيف يمكنني مساعدتك اليوم؟";
-            } else if (query.includes("كيف حالك")) {
-                response = "أنا بخير، شكراً لسؤالك! أنا مجرد أكواد في النهاية. هاهاها";
-            } else if (query.includes("ما هو اسمك")) {
-                response = "يمكنك مناداتي بالمساعد الذكي. أو فينوم إذا أردت.";
-            } else if (query.includes("اضحك")) {
-                response = "ها ها ها ها ها!";
-            } else if (query.includes("شكرا")) {
-                response = "على الرحب والسعة!";
+            const responses = {
+                "مرحبا": ["أهلاً بك!", "مرحباً، كيف أخدمك؟", "يا أهلاً، أنا في الاستماع."],
+                "كيف حالك": ["أنا بخير، مجرد مجموعة من الأكواد تعمل بانسجام.", "بأفضل حال، شكراً لسؤالك.", "أنا في حالة ممتازة، وجاهز للمساعدة."],
+                "ما هو اسمك": ["ليس لدي اسم، ولكن يمكنك مناداتي بالمساعد.", "أنا كيان رقمي، يمكنك أن تناديني فينوم.", "الأسماء للبشر، أنا مجرد برنامج."],
+                "اضحك": ["ها ها ها ها.", "هه هه هه.", "ضحكة رقمية: هاهاها."],
+                "شكرا": ["العفو!", "على الرحب والسعة.", "لا شكر على واجب."]
+            };
+
+            for (const key in responses) {
+                if (query.includes(key)) {
+                    const possibleResponses = responses[key];
+                    response = possibleResponses[Math.floor(Math.random() * possibleResponses.length)];
+                    break;
+                }
             }
             
             speak(response);
         };
         
-        // تحميل الأصوات المتاحة
+        // تحميل الأصوات المتاحة في المتصفح
         synthesis.onvoiceschanged = () => {
             console.log("الأصوات المتاحة:", synthesis.getVoices());
         };
-
     </script>
-
 </body>
 </html>
