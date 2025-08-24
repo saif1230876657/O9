@@ -3,144 +3,334 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>المساعد الصوتي | الإصدار المستقر</title>
+    <title>المساعد الصوتي | الإصدار النهائي</title>
     <script type="importmap">
       { "imports": { "@google/generative-ai": "https://esm.run/@google/generative-ai" } }
     </script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@700&display=swap');
+        
         :root {
-            --background-color: #ffffff; --main-color: #000000;
-            --border-color: #e0e0e0; --text-color: #aaaaaa;
+            --background-color-light: #ffffff; --main-color-light: #000000;
+            --border-color-light: #e0e0e0; --text-color-light: #aaaaaa;
+            
+            --background-color-space: #000010; --main-color-space: #0d47a1;
+            --border-color-space: #1976d2; --text-color-space: #bbdefb;
+            
+            --cursor-light: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewport="0 0 100 100" style="fill:black;"><circle cx="10" cy="10" r="10" /></svg>') 10 10, auto;
+            --cursor-space: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="32" height="32" fill="%23ffffff"><path d="M22 12l-10-7v4.4l-6.32 2.6-3.68-3.68 1.41-1.42-3.1-3.1-1.42 1.41 3.69 3.69L.29 12.5l1.42 1.41 3.2-1.34 3.69 3.69 1.41-1.42-3.68-3.68L12 14.6V19z"/></svg>') 16 16, auto;
         }
+
         body {
-            background-color: var(--background-color); margin: 0; height: 100vh;
-            display: flex; justify-content: center; align-items: center;
+            margin: 0; height: 100vh; display: flex;
+            justify-content: center; align-items: center;
             font-family: 'Cairo', sans-serif; overflow: hidden;
-            cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewport="0 0 100 100" style="fill:black;"><circle cx="10" cy="10" r="10" /></svg>') 10 10, auto;
+            transition: background-color 0.5s ease, cursor 0.5s ease;
         }
+        body.light-theme {
+            background-color: var(--background-color-light);
+            cursor: var(--cursor-light);
+        }
+        body.space-theme {
+            background-image: url('https://www.transparenttextures.com/patterns/stardust.png');
+            background-color: var(--background-color-space);
+            cursor: var(--cursor-space);
+        }
+
         #venom-container {
             width: 300px; height: 300px; position: absolute;
-            filter: url('#goo'); /* الفلتر الذي يدمج الأشكال معًا */
+            filter: url('#goo'); display: none;
         }
+        body.light-theme #venom-container { display: block; }
         .blob {
-            position: absolute; background: var(--main-color); border-radius: 50%;
-            transition: transform 0.2s ease-out; /* حركة سلسة عند التفاعل */
+            position: absolute; background: var(--main-color-light); border-radius: 50%;
+            transition: transform 0.2s ease-out;
         }
-        /* الأشكال الأساسية التي ستكون المادة */
         .blob:nth-child(1) { width: 150px; height: 150px; top: 75px; left: 75px; }
         .blob:nth-child(2) { width: 80px; height: 80px; top: 60px; left: 60px; }
         .blob:nth-child(3) { width: 70px; height: 70px; top: 150px; left: 150px; }
         .blob:nth-child(4) { width: 60px; height: 60px; top: 140px; left: 80px; }
 
-        .controls { z-index: 1; position: absolute; bottom: 50px; display: flex; align-items: center; gap: 25px; }
+        #space-canvas {
+            position: absolute; top: 0; left: 0;
+            width: 100%; height: 100%; display: none;
+        }
+        body.space-theme #space-canvas { display: block; }
+
+        .controls { z-index: 10; position: absolute; bottom: 50px; display: flex; align-items: center; gap: 25px; }
         #talkButton {
-            width: 80px; height: 80px; border-radius: 50%; border: 4px solid var(--border-color);
-            background-color: var(--main-color); cursor: pointer; display: flex; justify-content: center; align-items: center;
-            transition: transform 0.2s ease, background-color 0.2s ease; box-shadow: 0px 8px 25px rgba(0, 0, 0, 0.1);
+            cursor: pointer; display: flex; justify-content: center; align-items: center;
+            transition: transform 0.2s ease, background-color 0.2s ease; box-shadow: 0px 8px 25px rgba(0, 0, 0, 0.2);
         }
-        #talkButton.listening { background-color: #d32f2f; animation: pulse 1.5s infinite; }
         #talkButton:hover { transform: scale(1.1); }
-        #talkButton svg { width: 40px; height: 40px; fill: #ffffff; }
+        #talkButton svg { width: 40px; height: 40px; fill: #ffffff; transition: transform 0.3s ease; }
+
+        body.light-theme #talkButton {
+            width: 80px; height: 80px; border-radius: 50%; border: 4px solid var(--border-color-light);
+            background-color: var(--main-color-light);
+        }
+        body.space-theme #talkButton {
+            width: 90px; height: 90px; border-radius: 25%; border: 4px solid var(--border-color-space);
+            background: linear-gradient(145deg, #1e88e5, #0d47a1);
+            transform: rotate(45deg);
+        }
+        body.space-theme #talkButton:hover { transform: scale(1.1) rotate(45deg); }
+        body.space-theme #talkButton svg { transform: rotate(-45deg); }
+
+        #talkButton.listening { animation: pulse 1.5s infinite; }
+        body.light-theme #talkButton.listening { background-color: #d32f2f; }
+        body.space-theme #talkButton.listening { background: #ff4081; }
+
         @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(211, 47, 47, 0.7); } 70% { box-shadow: 0 0 0 20px rgba(211, 47, 47, 0); } 100% { box-shadow: 0 0 0 0 rgba(211, 47, 47, 0); } }
-        #stopButton {
-            width: 50px; height: 50px; border-radius: 50%; border: 2px solid var(--border-color);
-            background-color: transparent; color: #ccc; cursor: pointer; font-size: 24px;
-            font-weight: bold; display: flex; justify-content: center; align-items: center; transition: all 0.2s ease;
+
+        #stopButton, #theme-toggle {
+            width: 50px; height: 50px; border-radius: 50%; cursor: pointer;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 24px; font-weight: bold; transition: all 0.2s ease;
         }
-        #stopButton:hover { border-color: var(--main-color); color: var(--main-color); transform: scale(1.1) rotate(90deg); }
-        .status { z-index: 1; position: absolute; top: 40px; font-size: 1.2em; color: var(--text-color); }
-        .emoji { position: absolute; font-size: 24px; animation: fly-out 1s ease-out forwards; }
-        @keyframes fly-out {
-            0% { transform: scale(0.5); opacity: 1; }
-            100% { transform: scale(1.5); opacity: 0; }
+        #stopButton:hover { transform: scale(1.1) rotate(90deg); }
+        #theme-toggle:hover { transform: scale(1.1) rotate(360deg); }
+        
+        body.light-theme #stopButton, body.light-theme #theme-toggle {
+            background-color: transparent; color: #ccc; border: 2px solid var(--border-color-light);
         }
+        body.light-theme #stopButton:hover, body.light-theme #theme-toggle:hover { border-color: var(--main-color-light); color: var(--main-color-light); }
+        
+        body.space-theme #stopButton, body.space-theme #theme-toggle {
+            background-color: transparent; color: var(--border-color-space); border: 2px solid var(--border-color-space);
+        }
+        body.space-theme #stopButton:hover, body.space-theme #theme-toggle:hover { border-color: #fff; color: #fff; }
+
+        .status { z-index: 10; position: absolute; top: 40px; font-size: 1.2em; transition: color 0.5s; }
+        body.light-theme .status { color: var(--text-color-light); }
+        body.space-theme .status { color: var(--text-color-space); }
+
+        #name-modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.7); display: flex; justify-content: center;
+            align-items: center; z-index: 100; backdrop-filter: blur(5px);
+        }
+        .modal-content {
+            background-color: #fff; padding: 30px; border-radius: 15px; text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2); width: 90%; max-width: 400px;
+        }
+        .modal-content h2 { margin-top: 0; color: #333; }
+        .modal-content input {
+            width: 80%; padding: 12px; margin: 15px 0; border-radius: 8px;
+            border: 2px solid #ddd; text-align: center; font-size: 1.1em;
+            font-family: 'Cairo', sans-serif;
+        }
+        .modal-content button {
+            padding: 10px 30px; border: none; background-color: #0d47a1;
+            color: white; border-radius: 8px; cursor: pointer; font-size: 1em;
+            font-family: 'Cairo', sans-serif; transition: background-color 0.2s;
+        }
+        .modal-content button:hover { background-color: #1976d2; }
+        #name-error { color: #d32f2f; height: 20px; font-size: 0.9em; }
     </style>
 </head>
 <body>
+    <div id="name-modal">
+        <div class="modal-content">
+            <h2>مرحباً بك! ما هو اسمك؟</h2>
+            <p>لجعل التجربة شخصية, الرجاء إدخال اسمك الثنائي أو الثلاثي.</p>
+            <form id="name-form">
+                <input type="text" id="name-input" placeholder="اكتب اسمك هنا" required>
+                <div id="name-error"></div>
+                <button type="submit">حفظ وبدء</button>
+            </form>
+        </div>
+    </div>
+    
     <div class="status" id="status">اضغط للتحدث</div>
+    
     <div id="venom-container">
         <div class="blob"></div><div class="blob"></div><div class="blob"></div><div class="blob"></div>
     </div>
+    
+    <canvas id="space-canvas"></canvas>
+    
     <div class="controls">
         <button id="stopButton" title="إيقاف الكل">X</button>
         <button id="talkButton" title="اضغط للتحدث">
             <svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.49 6-3.31 6-6.72h-1.7z"/></svg>
         </button>
+        <button id="theme-toggle" title="تغيير الواجهة"></button>
     </div>
+    
     <svg style="position:absolute; width:0; height:0;"><defs><filter id="goo"><feGaussianBlur in="SourceGraphic" stdDeviation="15" result="blur" /><feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 20 -9" result="goo" /><feBlend in="SourceGraphic" in2="goo" /></filter></defs></svg>
 
     <script type="module">
         import { GoogleGenerativeAI } from "@google/generative-ai";
 
-        // --- الإعدادات الأساسية (لا تغيير) ---
-        const API_KEY = "AIzaSyAnAUCajzM7PqrM6k5znxaOAKs3R1kHzWk";
+        // --- الخطوة الأهم: ضع مفتاح API الخاص بك هنا ---
+        const API_KEY = "AIzaSyAnAUCajzM7PqrM6k5znxaOAKs3R1kHzWk"; // <--- ضع مفتاحك الذي كان في الكود الأصلي هنا
+        
         const genAI = new GoogleGenerativeAI(API_KEY);
-        const model = genAI.getGenerativeModel({ 
-            model: "gemini-1.5-flash",
-            systemInstruction: "أنت مساعد ذكاء اصطناعي لطيف ومفيد للغاية. لديك شخصية مرحة ومستعدة للمساعدة دائمًا. اجعل ردودك واضحة وودودة باللغة العربية.",
-        });
-        const chat = model.startChat();
+        let model, chat;
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         const recognition = SpeechRecognition ? new SpeechRecognition() : null;
+        if (recognition) recognition.lang = 'ar-SA';
         const synthesis = window.speechSynthesis;
         
         const talkButton = document.getElementById('talkButton'), stopButton = document.getElementById('stopButton');
-        const statusDiv = document.getElementById('status'), venomContainer = document.getElementById('venom-container');
+        const statusDiv = document.getElementById('status'), themeToggleButton = document.getElementById('theme-toggle');
+        const nameModal = document.getElementById('name-modal'), nameForm = document.getElementById('name-form'), nameInput = document.getElementById('name-input'), nameError = document.getElementById('name-error');
         const blobs = document.querySelectorAll('.blob');
-        
-        let audioContext, analyser, animationFrameId, isListening = false, currentVolume = 0;
+        const canvas = document.getElementById('space-canvas'), ctx = canvas.getContext('2d');
 
-        // --- محرك الحركة والتفاعل الجديد ---
-        let mousePos = { x: 9999, y: 9999 };
+        let audioContext, analyser, animationFrameId, isListening = false, currentVolume = 0, userName = '';
+        let mousePos = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+        let spaceAnimationId;
+
+        function initializeChat(name) {
+            userName = name;
+            model = genAI.getGenerativeModel({ 
+                model: "gemini-1.5-flash",
+                systemInstruction: `أنت مساعد ذكاء اصطناعي لطيف ومفيد. شخصيتك مرحة. أنت تتحدث مع شخص اسمه "${name}". خاطبه باسمه أحياناً لجعل الحوار ودوداً وشخصياً. ردودك دائماً باللغة العربية.`,
+            });
+            chat = model.startChat();
+        }
+
+        nameForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const name = nameInput.value.trim();
+            const nameParts = name.split(' ').filter(part => part.length > 0);
+            if (nameParts.length >= 2 && nameParts.length <= 3) {
+                localStorage.setItem('userName', name);
+                initializeChat(name);
+                nameModal.style.display = 'none';
+            } else {
+                nameError.textContent = 'الرجاء إدخال اسم ثنائي أو ثلاثي صحيح.';
+            }
+        });
+
+        window.addEventListener('load', () => {
+            const savedName = localStorage.getItem('userName');
+            if (savedName) {
+                initializeChat(savedName);
+                nameModal.style.display = 'none';
+            } else {
+                nameModal.style.display = 'flex';
+            }
+            
+            const savedTheme = localStorage.getItem('theme') || 'light-theme';
+            setTheme(savedTheme);
+            
+            animationLoop();
+        });
+
+        function setTheme(theme) {
+            document.body.className = theme;
+            localStorage.setItem('theme', theme);
+            if (theme === 'space-theme') {
+                themeToggleButton.textContent = '☀️';
+                themeToggleButton.title = 'الواجهة العادية';
+                if (!spaceAnimationId) initSpaceAnimation();
+            } else {
+                themeToggleButton.textContent = '🚀';
+                themeToggleButton.title = 'واجهة الفضاء';
+                if (spaceAnimationId) {
+                    cancelAnimationFrame(spaceAnimationId);
+                    spaceAnimationId = null;
+                }
+            }
+        }
+        
+        themeToggleButton.addEventListener('click', () => {
+            const newTheme = document.body.classList.contains('light-theme') ? 'space-theme' : 'light-theme';
+            setTheme(newTheme);
+        });
+
         document.addEventListener('mousemove', e => { mousePos = { x: e.clientX, y: e.clientY }; });
-        document.addEventListener('mouseleave', () => { mousePos = { x: 9999, y: 9999 }; });
 
         function animationLoop(time) {
-            blobs.forEach((blob, index) => {
-                const rect = blob.getBoundingClientRect();
-                const blobCenter = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
-                
-                // 1. الحركة الموجية المستمرة
-                const angle = time * 0.001 * (index * 0.5 + 1);
-                const waveX = Math.sin(angle) * 20;
-                const waveY = Math.cos(angle) * 20;
-
-                // 2. تفاعل الصد مع الماوس
-                const dxMouse = blobCenter.x - mousePos.x;
-                const dyMouse = blobCenter.y - mousePos.y;
-                const distMouse = Math.sqrt(dxMouse * dxMouse + dyMouse * dyMouse);
-                const pushForce = Math.max(0, 1 - distMouse / 150) * 100;
-                const pushX = (dxMouse / distMouse) * pushForce;
-                const pushY = (dyMouse / distMouse) * pushForce;
-                
-                // 3. تفاعل الاهتزاز مع الصوت
-                const volumeScale = 1 + (currentVolume / 128) * 0.5;
-                const chaos = currentVolume * 0.2;
-                const chaosX = (Math.random() - 0.5) * chaos;
-                const chaosY = (Math.random() - 0.5) * chaos;
-                
-                blob.style.transform = `translate(${waveX + pushX + chaosX}px, ${waveY + pushY + chaosY}px) scale(${volumeScale})`;
-            });
-            // 4. إطلاق الإيموجيات
-            if (currentVolume > 80 && Math.random() < 0.3) spawnEmoji();
+            if (document.body.classList.contains('light-theme')) {
+                blobs.forEach((blob, index) => {
+                    const rect = blob.getBoundingClientRect();
+                    const blobCenter = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+                    const angle = time * 0.001 * (index * 0.5 + 1);
+                    const waveX = Math.sin(angle) * 20, waveY = Math.cos(angle) * 20;
+                    const dxMouse = blobCenter.x - mousePos.x, dyMouse = blobCenter.y - mousePos.y;
+                    const distMouse = Math.sqrt(dxMouse * dxMouse + dyMouse * dyMouse);
+                    const pushForce = Math.max(0, 1 - distMouse / 150) * 100;
+                    const pushX = (dxMouse / distMouse || 0) * pushForce, pushY = (dyMouse / distMouse || 0) * pushForce;
+                    const volumeScale = 1 + (currentVolume / 128) * 0.5;
+                    const chaos = currentVolume * 0.2;
+                    const chaosX = (Math.random() - 0.5) * chaos, chaosY = (Math.random() - 0.5) * chaos;
+                    blob.style.transform = `translate(${waveX + pushX + chaosX}px, ${waveY + pushY + chaosY}px) scale(${volumeScale})`;
+                });
+            }
             animationFrameId = requestAnimationFrame(animationLoop);
         }
-        
-        function spawnEmoji() {
-            const emoji = document.createElement('div');
-            emoji.className = 'emoji';
-            emoji.textContent = ['🔥', '✨', '⚡️', '💥'][Math.floor(Math.random() * 4)];
-            document.body.appendChild(emoji);
-            const angle = Math.random() * Math.PI * 2;
-            const force = Math.random() * 100 + 50;
-            emoji.style.left = `${window.innerWidth / 2}px`;
-            emoji.style.top = `${window.innerHeight / 2}px`;
-            emoji.style.transform = `translate(${Math.cos(angle) * force}px, ${Math.sin(angle) * force}px)`;
-            setTimeout(() => emoji.remove(), 1000);
+
+        let stars = [], shootingStars = [];
+        function initSpaceAnimation() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            stars = [];
+            for(let i = 0; i < 400; i++) {
+                stars.push({
+                    x: Math.random() * canvas.width, y: Math.random() * canvas.height,
+                    vx: (Math.random() - 0.5) * 0.1, vy: (Math.random() - 0.5) * 0.1,
+                    radius: Math.random() * 1.5,
+                    alpha: 0.5 + Math.random() * 0.5
+                });
+            }
+            if (!spaceAnimationId) animateSpace();
         }
+
+        function animateSpace() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            stars.forEach(star => {
+                const dx = star.x - mousePos.x;
+                const dy = star.y - mousePos.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                if (dist < 150) {
+                    star.vx += (dx / dist) * 0.05;
+                    star.vy += (dy / dist) * 0.05;
+                }
+
+                const volumeBoost = 1 + (currentVolume / 128) * 2;
+                star.x += star.vx * volumeBoost;
+                star.y += star.vy * volumeBoost;
+
+                star.vx *= 0.99; star.vy *= 0.99;
+                
+                if (star.x < 0) star.x = canvas.width; if (star.x > canvas.width) star.x = 0;
+                if (star.y < 0) star.y = canvas.height; if (star.y > canvas.height) star.y = 0;
+
+                ctx.beginPath();
+                ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255, 255, 255, ${star.alpha})`;
+                ctx.fill();
+            });
+
+            if (Math.random() < 0.05) { // فرصة ظهور شهاب
+                shootingStars.push({
+                    x: Math.random() * canvas.width, y: 0,
+                    len: Math.random() * 80 + 20,
+                    speed: Math.random() * 5 + 5,
+                    alpha: 1
+                });
+            }
+
+            shootingStars.forEach((ss, index) => {
+                ss.y += ss.speed;
+                ss.alpha *= 0.98;
+                ctx.beginPath();
+                ctx.moveTo(ss.x, ss.y);
+                ctx.lineTo(ss.x, ss.y - ss.len);
+                ctx.strokeStyle = `rgba(255, 255, 255, ${ss.alpha})`;
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                if (ss.alpha < 0.01) shootingStars.splice(index, 1);
+            });
+            
+            spaceAnimationId = requestAnimationFrame(animateSpace);
+        }
+        window.addEventListener('resize', () => { if(document.body.classList.contains('space-theme')) initSpaceAnimation(); });
         
-        // --- وظائف الصوت والتواصل مع الذكاء الاصطناعي (مستقرة) ---
         const setupAudioAnalysis = async () => {
             if (audioContext) return;
             try {
@@ -150,6 +340,7 @@
                 analyser.fftSize = 256;
                 audioContext.createMediaStreamSource(stream).connect(analyser);
                 const updateVolume = () => {
+                    if (!analyser) return;
                     const dataArray = new Uint8Array(analyser.frequencyBinCount);
                     analyser.getByteFrequencyData(dataArray);
                     currentVolume = dataArray.reduce((acc, val) => acc + val, 0) / dataArray.length;
@@ -158,22 +349,31 @@
                 updateVolume();
             } catch (err) { statusDiv.textContent = "لا يمكن الوصول إلى المايكروفون."; }
         };
+        
         const speak = (text) => {
             synthesis.cancel();
+            if (/[😂😄😆]/.test(text)) { text = "هاهاهاهاها"; }
+            
             const utterance = new SpeechSynthesisUtterance(text);
-            utterance.voice = (synthesis.getVoices()).find(v => v.lang.startsWith('ar')) || undefined;
+            const arabicVoice = synthesis.getVoices().find(v => v.lang.startsWith('ar'));
+            if (arabicVoice) utterance.voice = arabicVoice;
             utterance.onstart = () => { statusDiv.textContent = "يتحدث..."; };
             utterance.onend = () => { if (!isListening) statusDiv.textContent = "اضغط للتحدث"; };
             synthesis.speak(utterance);
         };
+
         const handleInteraction = async () => {
-            if (isListening) return;
+            if (isListening || !userName) return;
             if (synthesis.speaking) synthesis.cancel();
             await setupAudioAnalysis();
-            if (!audioContext) return;
-            isListening = true;
-            talkButton.classList.add('listening');
-            statusDiv.textContent = "استمع إليك...";
+            if (!recognition || !audioContext) {
+                statusDiv.textContent = "المتصفح لا يدعم التعرف على الصوت.";
+                return;
+            }
+            
+            isListening = true; talkButton.classList.add('listening');
+            statusDiv.textContent = `استمع إليك يا ${userName}...`;
+            
             recognition.start();
             recognition.onresult = async (event) => {
                 const transcript = event.results[0][0].transcript;
@@ -181,24 +381,23 @@
                 try {
                     const result = await chat.sendMessage(transcript);
                     speak(result.response.text());
-                } catch (error) { speak("عذراً، حدث خطأ أثناء الاتصال بالذكاء الاصطناعي."); }
+                } catch (error) { speak("عذراً، حدث خطأ أثناء الاتصال بالذكاء الاصطناعي."); console.error("API Error:", error); }
             };
             recognition.onend = () => stopAllActivities(false);
             recognition.onerror = (event) => stopAllActivities(true, event.error);
         };
+
         const stopAllActivities = (withError = false, errorMsg = '') => {
             currentVolume = 0; isListening = false;
             if (recognition) recognition.stop();
             if (synthesis) synthesis.cancel();
             talkButton.classList.remove('listening');
-            if (withError) { statusDiv.textContent = errorMsg === 'no-speech' ? "لم أسمع شيئًا" : "حدث خطأ"; }
+            if (withError) { statusDiv.textContent = errorMsg === 'no-speech' ? "لم أسمع شيئًا، حاول مجدداً" : "حدث خطأ"; }
             else if (!statusDiv.textContent.includes("يتحدث")) { statusDiv.textContent = "اضغط للتحدث"; }
         };
+
         talkButton.addEventListener('click', handleInteraction);
         stopButton.addEventListener('click', () => stopAllActivities(false));
-        
-        // بدء حلقة الحركة
-        animationLoop();
     </script>
 </body>
 </html>
