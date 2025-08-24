@@ -4,23 +4,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>المساعد الصوتي | Gemini</title>
-    <!-- استيراد مكتبة جوجل للذكاء الاصطناعي -->
     <script type="importmap">
-      {
-        "imports": {
-          "@google/generative-ai": "https://esm.run/@google/generative-ai"
-        }
-      }
+      { "imports": { "@google/generative-ai": "https://esm.run/@google/generative-ai" } }
     </script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@700&display=swap');
 
         :root {
+            /* --- تصميم الخلفية البيضاء --- */
+            --background-color: #ffffff;
             --main-color: #000000;
-            --border-color: #333;
+            --border-color: #e0e0e0;
+            --text-color: #aaaaaa;
         }
 
         body {
+            background-color: var(--background-color);
             margin: 0;
             height: 100vh;
             display: flex;
@@ -28,47 +27,37 @@
             align-items: center;
             font-family: 'Cairo', sans-serif;
             overflow: hidden;
-            /* --- تصميم الخلفية البانورامية --- */
-            color: #fff;
-            background: linear-gradient(-45deg, #0b0217, #2c1a3e, #0a192f, #1a0a24);
-            background-size: 400% 400%;
-            animation: panoramicShift 15s ease infinite;
+            /* --- مؤشر الماوس المخصص --- */
+            cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewport="0 0 100 100" style="fill:black;"><circle cx="10" cy="10" r="10" /></svg>') 10 10, auto;
         }
-
-        @keyframes panoramicShift {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-        /* ------------------------------------ */
 
         #venom-container {
             width: 300px;
             height: 300px;
             position: relative;
             filter: url('#goo');
-            transition: transform 0.2s ease-out;
-        }
-        
-        #venom-container.idle {
-            transform: scale(0.8);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
         .blob {
             position: absolute;
             background: var(--main-color);
             border-radius: 50%;
-            animation: move 20s infinite alternate;
+            /* --- الحركة الموجية الجديدة --- */
+            animation: wave 12s infinite alternate;
         }
 
-        .blob:nth-child(1) { width: 180px; height: 180px; top: 60px; left: 60px; }
-        .blob:nth-child(2) { width: 70px; height: 70px; top: 50px; left: 120px; animation-delay: -3s; }
-        .blob:nth-child(3) { width: 80px; height: 80px; top: 120px; left: 50px; animation-delay: -6s; }
-        .blob:nth-child(4) { width: 70px; height: 70px; top: 130px; left: 150px; animation-delay: -9s; }
+        .blob:nth-child(1) { width: 180px; height: 180px; top: 60px; left: 60px; animation-duration: 10s; }
+        .blob:nth-child(2) { width: 70px; height: 70px; top: 50px; left: 120px; animation-delay: -3s; animation-duration: 11s;}
+        .blob:nth-child(3) { width: 80px; height: 80px; top: 120px; left: 50px; animation-delay: -6s; animation-duration: 9s;}
+        .blob:nth-child(4) { width: 70px; height: 70px; top: 130px; left: 150px; animation-delay: -9s; animation-duration: 13s;}
         
-        @keyframes move {
-            from { transform: rotate(0deg) scale(1.0) translate(-10px, 5px); }
-            to   { transform: rotate(360deg) scale(1.1) translate(10px, -5px); }
+        @keyframes wave {
+            0%   { transform: translate(0, 0) scale(1.0) skew(0, 0); }
+            25%  { transform: translate(20px, -15px) scale(1.1) skew(-5deg, 5deg); }
+            50%  { transform: translate(-25px, 20px) scale(0.9) skew(10deg, -3deg); }
+            75%  { transform: translate(15px, 10px) scale(1.05) skew(-3deg, -8deg); }
+            100% { transform: translate(0, 0) scale(1.0) skew(0, 0); }
         }
 
         .controls {
@@ -80,31 +69,16 @@
         }
 
         #talkButton {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            border: 4px solid rgba(255, 255, 255, 0.1);
-            background-color: var(--main-color);
-            cursor: pointer;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            width: 80px; height: 80px; border-radius: 50%; border: 4px solid var(--border-color);
+            background-color: var(--main-color); cursor: pointer; display: flex;
+            justify-content: center; align-items: center;
             transition: transform 0.2s ease, background-color 0.2s ease;
-            box-shadow: 0px 8px 25px rgba(0, 0, 0, 0.5);
+            box-shadow: 0px 8px 25px rgba(0, 0, 0, 0.1);
         }
 
-        #talkButton.listening {
-            background-color: #d32f2f;
-            animation: pulse 1.5s infinite;
-        }
-        
+        #talkButton.listening { background-color: #d32f2f; animation: pulse 1.5s infinite; }
         #talkButton:hover { transform: scale(1.1); }
-
-        #talkButton svg {
-            width: 40px;
-            height: 40px;
-            fill: #ffffff;
-        }
+        #talkButton svg { width: 40px; height: 40px; fill: #ffffff; }
 
         @keyframes pulse {
             0% { box-shadow: 0 0 0 0 rgba(211, 47, 47, 0.7); }
@@ -113,64 +87,33 @@
         }
 
         #stopButton {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            border: 2px solid rgba(255, 255, 255, 0.2);
-            background-color: transparent;
-            color: #aaa;
-            cursor: pointer;
-            font-size: 24px;
-            font-weight: bold;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            width: 50px; height: 50px; border-radius: 50%; border: 2px solid var(--border-color);
+            background-color: transparent; color: #ccc; cursor: pointer; font-size: 24px;
+            font-weight: bold; display: flex; justify-content: center; align-items: center;
             transition: all 0.2s ease;
         }
 
         #stopButton:hover {
-            border-color: #fff;
-            color: #fff;
+            border-color: var(--main-color); color: var(--main-color);
             transform: scale(1.1) rotate(90deg);
         }
 
-        .status {
-            position: absolute;
-            top: 40px;
-            font-size: 1.2em;
-            color: rgba(255, 255, 255, 0.5);
-            transition: opacity 0.3s;
-        }
+        .status { position: absolute; top: 40px; font-size: 1.2em; color: var(--text-color); }
     </style>
 </head>
 <body>
-
-    <div class="status" id="status"></div>
-
+    <div class="status" id="status">اضغط للتحدث</div>
     <div id="venom-container" class="idle">
-        <div class="blob"></div>
-        <div class="blob"></div>
-        <div class="blob"></div>
-        <div class="blob"></div>
+        <div class="blob"></div><div class="blob"></div><div class="blob"></div><div class="blob"></div>
     </div>
-    
     <div class="controls">
         <button id="stopButton" title="إيقاف الكل">X</button>
         <button id="talkButton" title="اضغط للتحدث">
-            <svg viewBox="0 0 24 24">
-                <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.49 6-3.31 6-6.72h-1.7z"/>
-            </svg>
+            <svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.49 6-3.31 6-6.72h-1.7z"/></svg>
         </button>
     </div>
-
     <svg style="position:absolute; width:0; height:0;">
-        <defs>
-            <filter id="goo">
-                <feGaussianBlur in="SourceGraphic" stdDeviation="15" result="blur" />
-                <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 20 -9" result="goo" />
-                <feBlend in="SourceGraphic" in2="goo" />
-            </filter>
-        </defs>
+        <defs><filter id="goo"><feGaussianBlur in="SourceGraphic" stdDeviation="15" result="blur" /><feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 20 -9" result="goo" /><feBlend in="SourceGraphic" in2="goo" /></filter></defs>
     </svg>
 
     <script type="module">
@@ -181,28 +124,28 @@
         const venomContainer = document.getElementById('venom-container');
         const statusDiv = document.getElementById('status');
         
-        // مفتاح API الخاص بك مدمج هنا
-        const API_KEY = "AIzaSyAnAUCajzM7PqrM6k5znxaOAKs3R1kHzWk"; 
-        
+        const API_KEY = "AIzaSyAnAUCajzM7PqrM6k5znxaOAKs3R1kHzWk";
         const genAI = new GoogleGenerativeAI(API_KEY);
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+        // --- توجيه شخصية الذكاء الاصطناعي ---
+        const model = genAI.getGenerativeModel({ 
+            model: "gemini-1.5-flash",
+            systemInstruction: "أنت مساعد ذكاء اصطناعي لطيف ومفيد للغاية. لديك شخصية مرحة ومستعدة للمساعدة دائمًا. اجعل ردودك واضحة وودودة باللغة العربية.",
+        });
         const chat = model.startChat();
 
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         const recognition = SpeechRecognition ? new SpeechRecognition() : null;
         const synthesis = window.speechSynthesis;
         
-        let audioContext, analyser, microphone;
+        let audioContext, analyser, microphone, animationFrameId;
         let isListening = false;
-        let animationFrameId;
 
         if (!recognition) {
             statusDiv.textContent = "متصفحك لا يدعم التعرف على الصوت.";
-            talkButton.disabled = true;
-            stopButton.disabled = true;
+            talkButton.disabled = true; stopButton.disabled = true;
         } else {
-            recognition.lang = 'ar-SA';
-            recognition.continuous = false;
+            recognition.lang = 'ar-SA'; recognition.continuous = false;
         }
         
         const setupAudioAnalysis = async () => {
@@ -214,10 +157,7 @@
                 microphone = audioContext.createMediaStreamSource(stream);
                 microphone.connect(analyser);
                 analyser.fftSize = 256;
-                statusDiv.textContent = "جاهز للاستماع";
-            } catch (err) {
-                statusDiv.textContent = "لا يمكن الوصول إلى المايكروفون.";
-            }
+            } catch (err) { statusDiv.textContent = "لا يمكن الوصول إلى المايكروفون."; }
         };
 
         const analyzeVolume = () => {
@@ -225,36 +165,32 @@
             const dataArray = new Uint8Array(analyser.frequencyBinCount);
             analyser.getByteFrequencyData(dataArray);
             const average = dataArray.reduce((acc, val) => acc + val, 0) / dataArray.length;
-            const scale = 0.8 + (average / 128) * 0.7;
+            const scale = 1 + (average / 128) * 0.5; // تفاعل الحركة مع الصوت
             venomContainer.style.transform = `scale(${scale})`;
             animationFrameId = requestAnimationFrame(analyzeVolume);
         };
         
         const speak = (text) => {
             synthesis.cancel();
-            // تصحيح الخطأ الإملائي هنا
             const utterance = new SpeechSynthesisUtterance(text);
             const voices = synthesis.getVoices();
             utterance.voice = voices.find(v => v.lang.startsWith('ar')) || voices[0];
-            
             utterance.onstart = () => { statusDiv.textContent = "يتحدث..."; };
-            utterance.onend = () => { 
-                if (!isListening) {
-                    statusDiv.textContent = "اضغط للتحدث";
-                }
-            };
+            utterance.onend = () => { if (!isListening) { statusDiv.textContent = "اضغط للتحدث"; }};
             synthesis.speak(utterance);
         };
 
         const handleInteraction = async () => {
             if (isListening) return;
+            // --- ميزة المقاطعة (Barge-in) ---
+            if (synthesis.speaking) { synthesis.cancel(); }
+
             await setupAudioAnalysis();
             if (!audioContext) return;
             
             isListening = true;
             talkButton.classList.add('listening');
             statusDiv.textContent = "استمع إليك...";
-            venomContainer.classList.remove('idle');
             
             recognition.start();
             analyzeVolume();
@@ -265,9 +201,7 @@
                 try {
                     const result = await chat.sendMessage(transcript);
                     speak(result.response.text());
-                } catch (error) {
-                    speak("عذراً، حدث خطأ أثناء الاتصال بالذكاء الاصطناعي.");
-                }
+                } catch (error) { speak("عذراً، حدث خطأ أثناء الاتصال بالذكاء الاصطناعي."); }
             };
             
             recognition.onend = () => { stopAllActivities(false); };
@@ -280,30 +214,15 @@
             if (synthesis) synthesis.cancel();
             
             talkButton.classList.remove('listening');
-            venomContainer.classList.add('idle');
-            venomContainer.style.transform = `scale(0.8)`;
+            venomContainer.style.transform = `scale(1)`;
             
-            if (animationFrameId) {
-                cancelAnimationFrame(animationFrameId);
-                animationFrameId = null;
-            }
-
-            if (withError) {
-                statusDiv.textContent = errorMsg === 'no-speech' ? "لم أسمع شيئًا" : "حدث خطأ";
-            } else if (statusDiv.textContent.includes("أفكر")) {
-                 // لا تغير النص إذا كان الذكاء الاصطناعي لا يزال يفكر
-            } else {
-                 statusDiv.textContent = "اضغط للتحدث";
-            }
+            if (animationFrameId) { cancelAnimationFrame(animationFrameId); animationFrameId = null; }
+            if (withError) { statusDiv.textContent = errorMsg === 'no-speech' ? "لم أسمع شيئًا" : "حدث خطأ"; }
+            else if (!statusDiv.textContent.includes("يتحدث")) { statusDiv.textContent = "اضغط للتحدث"; }
         };
 
         talkButton.addEventListener('click', handleInteraction);
         stopButton.addEventListener('click', () => stopAllActivities(false));
-
-        statusDiv.textContent = "جارِ التهيئة...";
-        // يتم استدعاؤه مرة واحدة لتحضير المايكروفون مسبقًا
-        talkButton.addEventListener('mouseover', setupAudioAnalysis, { once: true });
-
     </script>
 </body>
 </html>
