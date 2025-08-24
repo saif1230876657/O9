@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>المساعد الصوتي | Physics Engine</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+    <title>المساعد الصوتي | الإصدار المستقر</title>
     <script type="importmap">
       { "imports": { "@google/generative-ai": "https://esm.run/@google/generative-ai" } }
     </script>
@@ -20,11 +19,21 @@
             font-family: 'Cairo', sans-serif; overflow: hidden;
             cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewport="0 0 100 100" style="fill:black;"><circle cx="10" cy="10" r="10" /></svg>') 10 10, auto;
         }
-        canvas {
-            position: absolute; top: 0; left: 0; z-index: 0;
+        #venom-container {
+            width: 300px; height: 300px; position: absolute;
+            filter: url('#goo'); /* الفلتر الذي يدمج الأشكال معًا */
         }
-        .controls, .status { z-index: 1; } /* للتأكد من أن الأزرار والنص فوق الكانفاس */
-        .controls { position: absolute; bottom: 50px; display: flex; align-items: center; gap: 25px; }
+        .blob {
+            position: absolute; background: var(--main-color); border-radius: 50%;
+            transition: transform 0.2s ease-out; /* حركة سلسة عند التفاعل */
+        }
+        /* الأشكال الأساسية التي ستكون المادة */
+        .blob:nth-child(1) { width: 150px; height: 150px; top: 75px; left: 75px; }
+        .blob:nth-child(2) { width: 80px; height: 80px; top: 60px; left: 60px; }
+        .blob:nth-child(3) { width: 70px; height: 70px; top: 150px; left: 150px; }
+        .blob:nth-child(4) { width: 60px; height: 60px; top: 140px; left: 80px; }
+
+        .controls { z-index: 1; position: absolute; bottom: 50px; display: flex; align-items: center; gap: 25px; }
         #talkButton {
             width: 80px; height: 80px; border-radius: 50%; border: 4px solid var(--border-color);
             background-color: var(--main-color); cursor: pointer; display: flex; justify-content: center; align-items: center;
@@ -33,34 +42,38 @@
         #talkButton.listening { background-color: #d32f2f; animation: pulse 1.5s infinite; }
         #talkButton:hover { transform: scale(1.1); }
         #talkButton svg { width: 40px; height: 40px; fill: #ffffff; }
-        @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(211, 47, 47, 0.7); }
-            70% { box-shadow: 0 0 0 20px rgba(211, 47, 47, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(211, 47, 47, 0); }
-        }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(211, 47, 47, 0.7); } 70% { box-shadow: 0 0 0 20px rgba(211, 47, 47, 0); } 100% { box-shadow: 0 0 0 0 rgba(211, 47, 47, 0); } }
         #stopButton {
             width: 50px; height: 50px; border-radius: 50%; border: 2px solid var(--border-color);
             background-color: transparent; color: #ccc; cursor: pointer; font-size: 24px;
             font-weight: bold; display: flex; justify-content: center; align-items: center; transition: all 0.2s ease;
         }
         #stopButton:hover { border-color: var(--main-color); color: var(--main-color); transform: scale(1.1) rotate(90deg); }
-        .status { position: absolute; top: 40px; font-size: 1.2em; color: var(--text-color); }
+        .status { z-index: 1; position: absolute; top: 40px; font-size: 1.2em; color: var(--text-color); }
+        .emoji { position: absolute; font-size: 24px; animation: fly-out 1s ease-out forwards; }
+        @keyframes fly-out {
+            0% { transform: scale(0.5); opacity: 1; }
+            100% { transform: scale(1.5); opacity: 0; }
+        }
     </style>
 </head>
 <body>
-    <canvas id="physics-canvas"></canvas>
     <div class="status" id="status">اضغط للتحدث</div>
+    <div id="venom-container">
+        <div class="blob"></div><div class="blob"></div><div class="blob"></div><div class="blob"></div>
+    </div>
     <div class="controls">
         <button id="stopButton" title="إيقاف الكل">X</button>
         <button id="talkButton" title="اضغط للتحدث">
             <svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.49 6-3.31 6-6.72h-1.7z"/></svg>
         </button>
     </div>
+    <svg style="position:absolute; width:0; height:0;"><defs><filter id="goo"><feGaussianBlur in="SourceGraphic" stdDeviation="15" result="blur" /><feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 20 -9" result="goo" /><feBlend in="SourceGraphic" in2="goo" /></filter></defs></svg>
 
     <script type="module">
         import { GoogleGenerativeAI } from "@google/generative-ai";
 
-        // --- إعدادات الذكاء الاصطناعي والصوت (لا تغيير) ---
+        // --- الإعدادات الأساسية (لا تغيير) ---
         const API_KEY = "AIzaSyAnAUCajzM7PqrM6k5znxaOAKs3R1kHzWk";
         const genAI = new GoogleGenerativeAI(API_KEY);
         const model = genAI.getGenerativeModel({ 
@@ -72,103 +85,87 @@
         const recognition = SpeechRecognition ? new SpeechRecognition() : null;
         const synthesis = window.speechSynthesis;
         
-        const talkButton = document.getElementById('talkButton');
-        const stopButton = document.getElementById('stopButton');
-        const statusDiv = document.getElementById('status');
+        const talkButton = document.getElementById('talkButton'), stopButton = document.getElementById('stopButton');
+        const statusDiv = document.getElementById('status'), venomContainer = document.getElementById('venom-container');
+        const blobs = document.querySelectorAll('.blob');
         
-        let audioContext, analyser;
-        let isListening = false;
-        let currentVolume = 0;
-        let emojiParticles = [];
+        let audioContext, analyser, animationFrameId, isListening = false, currentVolume = 0;
 
-        // --- إعداد المحرك الفيزيائي Matter.js ---
-        const { Engine, Render, Runner, Bodies, Composite, Constraint, Mouse, MouseConstraint, Events } = Matter;
-        const engine = Engine.create({ gravity: { x: 0, y: 0 } });
-        const canvas = document.getElementById('physics-canvas');
-        const render = Render.create({
-            canvas: canvas, engine: engine,
-            options: { width: window.innerWidth, height: window.innerHeight, wireframes: false, background: 'transparent' }
-        });
-        const runner = Runner.create();
+        // --- محرك الحركة والتفاعل الجديد ---
+        let mousePos = { x: 9999, y: 9999 };
+        document.addEventListener('mousemove', e => { mousePos = { x: e.clientX, y: e.clientY }; });
+        document.addEventListener('mouseleave', () => { mousePos = { x: 9999, y: 9999 }; });
 
-        // إنشاء جسيمات "فينوم"
-        const particles = [];
-        const center = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
-        for (let i = 0; i < 40; i++) {
-            const particle = Bodies.circle(center.x + (Math.random() - 0.5) * 50, center.y + (Math.random() - 0.5) * 50, 15, {
-                frictionAir: 0.05,
-                render: { fillStyle: '#000' }
+        function animationLoop(time) {
+            blobs.forEach((blob, index) => {
+                const rect = blob.getBoundingClientRect();
+                const blobCenter = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+                
+                // 1. الحركة الموجية المستمرة
+                const angle = time * 0.001 * (index * 0.5 + 1);
+                const waveX = Math.sin(angle) * 20;
+                const waveY = Math.cos(angle) * 20;
+
+                // 2. تفاعل الصد مع الماوس
+                const dxMouse = blobCenter.x - mousePos.x;
+                const dyMouse = blobCenter.y - mousePos.y;
+                const distMouse = Math.sqrt(dxMouse * dxMouse + dyMouse * dyMouse);
+                const pushForce = Math.max(0, 1 - distMouse / 150) * 100;
+                const pushX = (dxMouse / distMouse) * pushForce;
+                const pushY = (dyMouse / distMouse) * pushForce;
+                
+                // 3. تفاعل الاهتزاز مع الصوت
+                const volumeScale = 1 + (currentVolume / 128) * 0.5;
+                const chaos = currentVolume * 0.2;
+                const chaosX = (Math.random() - 0.5) * chaos;
+                const chaosY = (Math.random() - 0.5) * chaos;
+                
+                blob.style.transform = `translate(${waveX + pushX + chaosX}px, ${waveY + pushY + chaosY}px) scale(${volumeScale})`;
             });
-            particles.push(particle);
-            // ربط كل جسيم بالمركز بقيد مرن (كالمغناطيس)
-            const constraint = Constraint.create({
-                pointA: center, bodyB: particle,
-                stiffness: 0.005, damping: 0.1,
-            });
-            Composite.add(engine.world, constraint);
+            // 4. إطلاق الإيموجيات
+            if (currentVolume > 80 && Math.random() < 0.3) spawnEmoji();
+            animationFrameId = requestAnimationFrame(animationLoop);
         }
-        Composite.add(engine.world, particles);
-
-        // التفاعل مع الماوس
-        const mouse = Mouse.create(render.canvas);
-        const mouseConstraint = MouseConstraint.create(engine, {
-            mouse: mouse, constraint: { stiffness: 0.2, render: { visible: false } }
-        });
-        Composite.add(engine.world, mouseConstraint);
-
-        // --- الحلقة الفيزيائية الرئيسية (قلب التفاعل) ---
-        Events.on(engine, 'beforeUpdate', (event) => {
-            particles.forEach(p => {
-                // 1. قوة الصد من الماوس
-                const dist = Matter.Vector.magnitude(Matter.Vector.sub(p.position, mouse.position));
-                if (dist < 100) {
-                    const force = Matter.Vector.mult(Matter.Vector.normalise(Matter.Vector.sub(p.position, mouse.position)), 0.01);
-                    Matter.Body.applyForce(p, p.position, force);
-                }
-            });
-             // 2. قوة الاهتزاز من الصوت
-            if (currentVolume > 10) {
-                const chaos = currentVolume / 128 * 0.005;
-                particles.forEach(p => Matter.Body.applyForce(p, p.position, {
-                    x: (Math.random() - 0.5) * chaos, y: (Math.random() - 0.5) * chaos
-                }));
-                // 3. إطلاق الإيموجيات عند الصوت العالي
-                if (currentVolume > 60 && Math.random() < 0.2) {
-                    spawnEmoji();
-                }
-            }
-        });
         
-        // رسم الإيموجيات
-        Events.on(render, 'afterRender', () => {
-            const ctx = render.context;
-            ctx.font = '20px sans-serif';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            emojiParticles.forEach((p, i) => {
-                ctx.fillText('⚡', p.position.x, p.position.y);
-                p.lifespan--;
-                if (p.lifespan <= 0) {
-                    Composite.remove(engine.world, p);
-                    emojiParticles.splice(i, 1);
-                }
-            });
-        });
-
-        Render.run(render);
-        Runner.run(runner, engine);
-
-        // --- وظائف الصوت والتفاعل ---
-        const setupAudioAnalysis = async () => { /* ... نفس الكود ... */ };
-        const analyzeVolume = () => {
-            if (!analyser) return;
-            const dataArray = new Uint8Array(analyser.frequencyBinCount);
-            analyser.getByteFrequencyData(dataArray);
-            currentVolume = dataArray.reduce((acc, val) => acc + val, 0) / dataArray.length;
-            requestAnimationFrame(analyzeVolume);
+        function spawnEmoji() {
+            const emoji = document.createElement('div');
+            emoji.className = 'emoji';
+            emoji.textContent = ['🔥', '✨', '⚡️', '💥'][Math.floor(Math.random() * 4)];
+            document.body.appendChild(emoji);
+            const angle = Math.random() * Math.PI * 2;
+            const force = Math.random() * 100 + 50;
+            emoji.style.left = `${window.innerWidth / 2}px`;
+            emoji.style.top = `${window.innerHeight / 2}px`;
+            emoji.style.transform = `translate(${Math.cos(angle) * force}px, ${Math.sin(angle) * force}px)`;
+            setTimeout(() => emoji.remove(), 1000);
+        }
+        
+        // --- وظائف الصوت والتواصل مع الذكاء الاصطناعي (مستقرة) ---
+        const setupAudioAnalysis = async () => {
+            if (audioContext) return;
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                audioContext = new AudioContext();
+                analyser = audioContext.createAnalyser();
+                analyser.fftSize = 256;
+                audioContext.createMediaStreamSource(stream).connect(analyser);
+                const updateVolume = () => {
+                    const dataArray = new Uint8Array(analyser.frequencyBinCount);
+                    analyser.getByteFrequencyData(dataArray);
+                    currentVolume = dataArray.reduce((acc, val) => acc + val, 0) / dataArray.length;
+                    requestAnimationFrame(updateVolume);
+                };
+                updateVolume();
+            } catch (err) { statusDiv.textContent = "لا يمكن الوصول إلى المايكروفون."; }
         };
-        const speak = (text) => { /* ... نفس الكود ... */ };
-
+        const speak = (text) => {
+            synthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.voice = (synthesis.getVoices()).find(v => v.lang.startsWith('ar')) || undefined;
+            utterance.onstart = () => { statusDiv.textContent = "يتحدث..."; };
+            utterance.onend = () => { if (!isListening) statusDiv.textContent = "اضغط للتحدث"; };
+            synthesis.speak(utterance);
+        };
         const handleInteraction = async () => {
             if (isListening) return;
             if (synthesis.speaking) synthesis.cancel();
@@ -178,75 +175,30 @@
             talkButton.classList.add('listening');
             statusDiv.textContent = "استمع إليك...";
             recognition.start();
-            analyzeVolume();
-            recognition.onresult = async (event) => { /* ... نفس الكود ... */ };
+            recognition.onresult = async (event) => {
+                const transcript = event.results[0][0].transcript;
+                statusDiv.textContent = "لحظة، أفكر...";
+                try {
+                    const result = await chat.sendMessage(transcript);
+                    speak(result.response.text());
+                } catch (error) { speak("عذراً، حدث خطأ أثناء الاتصال بالذكاء الاصطناعي."); }
+            };
             recognition.onend = () => stopAllActivities(false);
             recognition.onerror = (event) => stopAllActivities(true, event.error);
         };
-        
         const stopAllActivities = (withError = false, errorMsg = '') => {
-            currentVolume = 0; // إيقاف الاهتزاز
-            isListening = false;
-            // ... باقي الكود من الإصدار السابق ...
-        };
-        
-        const spawnEmoji = () => {
-            const emoji = Bodies.circle(center.x, center.y, 5, {
-                frictionAir: 0.02, render: { visible: false } // الإيموجي غير مرئي للمحرك، نرسمه بأنفسنا
-            });
-            emoji.lifespan = 60; // عمر الإيموجي بالـ frames
-            Matter.Body.applyForce(emoji, emoji.position, {
-                x: (Math.random() - 0.5) * 0.05, y: (Math.random() - 0.5) * 0.05
-            });
-            emojiParticles.push(emoji);
-            Composite.add(engine.world, emoji);
-        };
-
-        // --- الربط مع الأزرار والإعدادات الأولية ---
-        talkButton.addEventListener('click', handleInteraction);
-        stopButton.addEventListener('click', () => stopAllActivities(false));
-        window.addEventListener('resize', () => { /* يمكن إضافة كود لتحديث أبعاد الكانفاس هنا */ });
-
-        // --- إعادة لصق الوظائف التي لم تتغير لضمان اكتمال الكود ---
-        recognition.lang = 'ar-SA'; recognition.continuous = false;
-        async function setupAudioAnalysis() {
-            if (audioContext) return;
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                audioContext = new AudioContext();
-                analyser = audioContext.createAnalyser();
-                microphone = audioContext.createMediaStreamSource(stream);
-                microphone.connect(analyser);
-                analyser.fftSize = 256;
-            } catch (err) { statusDiv.textContent = "لا يمكن الوصول إلى المايكروفون."; }
-        }
-        function speak(text) {
-            synthesis.cancel();
-            const utterance = new SpeechSynthesisUtterance(text);
-            const voices = synthesis.getVoices();
-            utterance.voice = voices.find(v => v.lang.startsWith('ar')) || voices[0];
-            utterance.onstart = () => { statusDiv.textContent = "يتحدث..."; };
-            utterance.onend = () => { if (!isListening) { statusDiv.textContent = "اضغط للتحدث"; }};
-            synthesis.speak(utterance);
-        }
-        function stopAllActivities(withError = false, errorMsg = '') {
-            currentVolume = 0;
-            isListening = false;
+            currentVolume = 0; isListening = false;
             if (recognition) recognition.stop();
             if (synthesis) synthesis.cancel();
             talkButton.classList.remove('listening');
             if (withError) { statusDiv.textContent = errorMsg === 'no-speech' ? "لم أسمع شيئًا" : "حدث خطأ"; }
             else if (!statusDiv.textContent.includes("يتحدث")) { statusDiv.textContent = "اضغط للتحدث"; }
-        }
-        recognition.onresult = async (event) => {
-            const transcript = event.results[0][0].transcript;
-            statusDiv.textContent = "لحظة، أفكر...";
-            try {
-                const result = await chat.sendMessage(transcript);
-                speak(result.response.text());
-            } catch (error) { speak("عذراً، حدث خطأ أثناء الاتصال بالذكاء الاصطناعي."); }
         };
-
+        talkButton.addEventListener('click', handleInteraction);
+        stopButton.addEventListener('click', () => stopAllActivities(false));
+        
+        // بدء حلقة الحركة
+        animationLoop();
     </script>
 </body>
 </html>
