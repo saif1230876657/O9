@@ -3,381 +3,240 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>المساعد الصوتي | نسخة محسنة</title>
-    <script type="importmap">
-      { "imports": { "@google/generative-ai": "https://esm.run/@google/generative-ai" } }
-    </script>
+    <title>البوابة المعرفية المتكاملة</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@700&display=swap');
-        
         :root {
-            --background-color-light: #f4f4f9; --main-color-light: #4a4a4a;
-            --border-color-light: #e0e0e0; --text-color-light: #aaaaaa;
-            
-            --background-color-space: #000010; --main-color-space: #0d47a1;
-            --border-color-space: #1976d2; --text-color-space: #bbdefb;
-            
-            --cursor-light: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewport="0 0 100 100" style="fill:black;"><circle cx="10" cy="10" r="10" /></svg>') 10 10, auto;
-            --cursor-space: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="32" height="32" fill="%23ffffff"><path d="M22 12l-10-7v4.4l-6.32 2.6-3.68-3.68 1.41-1.42-3.1-3.1-1.42 1.41 3.69 3.69L.29 12.5l1.42 1.41 3.2-1.34 3.69 3.69 1.41-1.42-3.68-3.68L12 14.6V19z"/></svg>') 16 16, auto;
+            --bg-color: #020010; --primary-color: #00f2ea; --secondary-color: #d400ff;
+            --glass-bg: rgba(15, 10, 35, 0.6); --border-color: rgba(0, 242, 234, 0.25);
+            --text-color: #f0f0f0; --text-secondary: #b0b0c0; --glow-color: rgba(0, 242, 234, 0.7);
         }
-
-        body {
-            margin: 0; height: 100vh; display: flex;
-            justify-content: center; align-items: center;
-            font-family: 'Cairo', sans-serif; overflow: hidden;
-            transition: background-color 0.5s ease, cursor 0.5s ease;
-        }
-        body.light-theme {
-            background-color: var(--background-color-light);
-            cursor: var(--cursor-light);
-        }
-        body.space-theme {
-            background-image: url('https://www.transparenttextures.com/patterns/stardust.png');
-            background-color: var(--background-color-space);
-            cursor: var(--cursor-space);
-        }
-
-        #venom-container {
-            width: 300px; height: 300px; position: absolute;
-            filter: url('#goo'); display: none;
-        }
-        body.light-theme #venom-container { display: block; }
-        .blob {
-            position: absolute; background: var(--main-color-light); border-radius: 50%;
-            transition: transform 0.2s ease-out;
-        }
-        .blob:nth-child(1) { width: 150px; height: 150px; top: 75px; left: 75px; }
-        .blob:nth-child(2) { width: 80px; height: 80px; top: 60px; left: 60px; }
-        .blob:nth-child(3) { width: 70px; height: 70px; top: 150px; left: 150px; }
-        .blob:nth-child(4) { width: 60px; height: 60px; top: 140px; left: 80px; }
-
-        #space-canvas {
-            position: absolute; top: 0; left: 0;
-            width: 100%; height: 100%; display: none;
-        }
-        body.space-theme #space-canvas { display: block; }
-
-        .controls { z-index: 10; position: absolute; bottom: 50px; display: flex; align-items: center; gap: 25px; }
-        #talkButton {
-            cursor: pointer; display: flex; justify-content: center; align-items: center;
-            transition: transform 0.2s ease, background-color 0.2s ease; box-shadow: 0px 8px 25px rgba(0, 0, 0, 0.2);
-        }
-        #talkButton:hover { transform: scale(1.1); }
-        #talkButton svg { width: 40px; height: 40px; fill: #ffffff; transition: transform 0.3s ease; }
-
-        body.light-theme #talkButton {
-            width: 80px; height: 80px; border-radius: 50%; border: 4px solid var(--border-color-light);
-            background-color: var(--main-color-light);
-        }
-        body.space-theme #talkButton {
-            width: 90px; height: 90px; border-radius: 25%; border: 4px solid var(--border-color-space);
-            background: linear-gradient(145deg, #1e88e5, #0d47a1);
-            transform: rotate(45deg);
-        }
-        body.space-theme #talkButton:hover { transform: scale(1.1) rotate(45deg); }
-        body.space-theme #talkButton svg { transform: rotate(-45deg); }
-
-        #talkButton.listening { animation: pulse 1.5s infinite; }
-        body.light-theme #talkButton.listening { background-color: #d32f2f; }
-        body.space-theme #talkButton.listening { background: #ff4081; }
-
-        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(211, 47, 47, 0.7); } 70% { box-shadow: 0 0 0 20px rgba(211, 47, 47, 0); } 100% { box-shadow: 0 0 0 0 rgba(211, 47, 47, 0); } }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Cairo', sans-serif; }
+        body { background-color: var(--bg-color); color: var(--text-color); }
+        .background-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -2; overflow: hidden; background: var(--bg-color); }
+        .stars { background: black url(https://s3-us-west-2.amazonaws.com/s.cdpn.io/1231630/stars.png) repeat; position: absolute; top: 0; left: 0; right: 0; bottom: 0; width: 100%; height: 100%; z-index: -1; animation: move-stars 80s linear infinite; }
+        @keyframes move-stars { from { background-position: 0 0; } to { background-position: 0 -10000px; } }
         
-        .icon-button {
-            width: 50px; height: 50px; border-radius: 50%; cursor: pointer;
-            display: flex; justify-content: center; align-items: center;
-            transition: all 0.2s ease; background-color: transparent;
-        }
-        .icon-button svg { width: 24px; height: 24px; }
+        /* --- HEADER --- */
+        .sticky-header-container { position: sticky; top: 0; z-index: 100; background: rgba(2, 0, 16, 0.85); backdrop-filter: blur(20px); padding: 0.75rem 0; box-shadow: 0 5px 20px rgba(0,0,0,0.5); }
+        .header-content { width: 95%; max-width: 1400px; margin: 0 auto; display: flex; align-items: center; gap: 1rem; }
+        header { display: flex; align-items: center; gap: 1rem; }
+        header h1 { font-size: 1.8rem; background: -webkit-linear-gradient(45deg, var(--primary-color), #fff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .header-actions button { background: var(--glass-bg); border: 1px solid var(--border-color); color: var(--text-color); width: 40px; height: 40px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .search-wrapper { flex-grow: 1; }
+        .search-bar { width: 100%; display: flex; align-items: center; background: var(--glass-bg); border: 1px solid var(--border-color); border-radius: 50px; }
+        #searchInput, #langSelect { background: transparent; border: none; outline: none; color: var(--text-color); }
+        #searchInput { width: 100%; padding: 0.7rem 1.2rem; font-size: 1rem; }
+        #langSelect { border-left: 1px solid var(--border-color); padding: 0 1rem; cursor: pointer; }
+        .icon-button { background: transparent; border: none; padding: 0 1rem; cursor: pointer; color: var(--text-secondary); }
+        .icon-button svg { width: 20px; height: 20px; vertical-align: middle; }
         
-        #stopButton:hover { transform: scale(1.1) rotate(90deg); }
+        /* --- MAIN LAYOUT --- */
+        .main-layout { display: grid; grid-template-columns: 380px 1fr; gap: 2rem; width: 95%; max-width: 1400px; margin: 2rem auto; align-items: flex-start; }
+        #results-sidebar { display: flex; flex-direction: column; gap: 1rem; }
+        #main-content-viewer { position: sticky; top: 110px; min-height: 75vh; background: var(--glass-bg); border-radius: 20px; border: 1px solid var(--border-color); padding: 2rem; overflow-y: auto; max-height: calc(100vh - 130px); }
         
-        body.light-theme .icon-button { border: 2px solid var(--border-color-light); }
-        body.light-theme .icon-button svg { fill: #ccc; }
-        body.light-theme .icon-button:hover { border-color: var(--main-color-light); }
-        body.light-theme .icon-button:hover svg { fill: var(--main-color-light); }
+        /* --- SIDEBAR CARD (Holographic) --- */
+        .card-container { perspective: 800px; }
+        .result-card { background: rgba(15, 10, 35, 0.4); border: 1px solid var(--border-color); border-radius: 15px; padding: 1.2rem; cursor: pointer; transition: all 0.2s ease-out; transform-style: preserve-3d; }
+        .card-container:hover .result-card { transform: rotateX(5deg) rotateY(-5deg) scale(1.05); border-color: var(--primary-color); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .result-card.active { border-color: var(--primary-color); background: var(--glass-bg); }
+        .result-card h3 { font-size: 1.2rem; margin-bottom: 0.5rem; transform: translateZ(20px); }
+        .result-card p { font-size: 0.9rem; line-height: 1.6; color: var(--text-secondary); margin-bottom: 1rem; transform: translateZ(10px); }
+        .card-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+        .card-actions button { background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); color: var(--text-secondary); padding: 0.4rem 0.8rem; border-radius: 20px; font-size: 0.8rem; cursor: pointer; display: inline-flex; align-items: center; gap: 0.4rem; }
+        .card-actions button.saved { color: var(--primary-color); border-color: var(--primary-color); }
         
-        body.space-theme .icon-button { border: 2px solid var(--border-color-space); }
-        body.space-theme .icon-button svg { fill: var(--border-color-space); }
-        body.space-theme .icon-button:hover { border-color: #fff; }
-        body.space-theme .icon-button:hover svg { fill: #fff; }
-        
-        #theme-toggle { position: absolute; top: 20px; right: 20px; z-index: 20; }
-        #theme-toggle:hover { transform: scale(1.1) rotate(360deg); }
-        #theme-toggle .moon-icon { display: none; }
-        #theme-toggle .sun-icon { display: block; }
-        body.space-theme #theme-toggle .moon-icon { display: block; }
-        body.space-theme #theme-toggle .sun-icon { display: none; }
-
-        .status { z-index: 10; position: absolute; top: 40px; font-size: 1.2em; transition: color 0.5s; }
-        body.light-theme .status { color: var(--text-color-light); }
-        body.space-theme .status { color: var(--text-color-space); }
-        
-        /* Modal Styles - No changes needed here */
-        #name-modal{position:fixed;top:0;left:0;width:100%;height:100%;background-color:rgba(0,0,0,0.7);display:flex;justify-content:center;align-items:center;z-index:100;backdrop-filter:blur(5px)}.modal-content{background-color:#fff;padding:30px;border-radius:15px;text-align:center;box-shadow:0 10px 30px rgba(0,0,0,0.2);width:90%;max-width:400px}.modal-content h2{margin-top:0;color:#333}.modal-content input{width:80%;padding:12px;margin:15px 0;border-radius:8px;border:2px solid #ddd;text-align:center;font-size:1.1em;font-family:'Cairo',sans-serif}.modal-content button{padding:10px 30px;border:none;background-color:#0d47a1;color:white;border-radius:8px;cursor:pointer;font-size:1em;font-family:'Cairo',sans-serif;transition:background-color .2s}.modal-content button:hover{background-color:#1976d2}#name-error{color:#d32f2f;height:20px;font-size:.9em}
+        /* --- MAIN CONTENT & MODALS --- */
+        .welcome-message, .loader { text-align: center; padding: 5rem 2rem; }
+        .loader-inner { width: 40px; height: 40px; border: 4px solid var(--border-color); border-top: 4px solid var(--primary-color); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto; }
+        .ai-insight-box { /* ... styles from previous version ... */ }
+        .details-text p { font-size: 1.1rem; line-height: 2.2; color: var(--text-secondary); margin-bottom: 1.5rem; }
+        .modal { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(2, 0, 16, 0.8); backdrop-filter: blur(15px); z-index: 1000; display: none; justify-content: center; align-items: center; }
+        .modal-content { background: #0a061a; border: 1px solid var(--border-color); width: 90%; max-width: 500px; border-radius: 20px; padding: 1.5rem; }
     </style>
 </head>
 <body>
-    <div id="name-modal">
-        <div class="modal-content">
-            <h2>مرحباً بك! ما هو اسمك؟</h2>
-            <p>لجعل التجربة شخصية, الرجاء إدخال اسمك الثنائي أو الثلاثي.</p>
-            <form id="name-form">
-                <input type="text" id="name-input" placeholder="اكتب اسمك هنا" required>
-                <div id="name-error"></div>
-                <button type="submit">حفظ وبدء</button>
-            </form>
+    <div class="background-container"><div class="stars"></div></div>
+    <div class="sticky-header-container">
+        <div class="header-content">
+            <header>
+                <h1>البوابة الذكية</h1>
+                <div class="header-actions">
+                    <button id="savedBtn" title="المقالات المحفوظة"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg></button>
+                </div>
+            </header>
+            <div class="search-wrapper">
+                <div class="search-bar">
+                    <select id="langSelect"><option value="ar">العربية</option><option value="en">English</option><option value="fr">Français</option><option value="es">Español</option></select>
+                    <input type="text" id="searchInput" placeholder="استكشف بكلمة...">
+                </div>
+            </div>
         </div>
     </div>
+
+    <main class="main-layout">
+        <aside id="results-sidebar"></aside>
+        <main id="main-content-viewer"><div class="welcome-message"><h2>استكشف المعرفة</h2></div></main>
+    </main>
+
+    <div id="shareModal" class="modal"><div class="modal-content"></div></div>
+    <div id="savedModal" class="modal"><div class="modal-content"></div></div>
     
-    <div class="status" id="status">اضغط للتحدث</div>
-    
-    <button id="theme-toggle" class="icon-button" title="تغيير الواجهة">
-        <svg class="sun-icon" viewBox="0 0 24 24"><path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM12 9c1.65 0 3 1.35 3 3s-1.35 3-3 3-3-1.35-3-3 1.35-3 3-3zm0-7v4h-2V2h2zm0 18v-4h2v4h-2zm-9-9h4v2H3v-2zm18 0h-4v2h4v-2zM4.22 4.22l2.83 2.83-1.41 1.41L2.81 5.63 4.22 4.22zm12.73 12.73l2.83 2.83 1.41-1.41-2.83-2.83-1.41 1.41zM5.63 19.78l1.41-1.41 2.83 2.83-1.41 1.41-2.83-2.83zM16.96 5.63l1.41 1.41 2.83-2.83-1.41-1.41-2.83 2.83z"/></svg>
-        <svg class="moon-icon" viewBox="0 0 24 24"><path d="M9.37 5.51A7.35 7.35 0 0 0 9.1 7.5c0 4.08 3.32 7.4 7.4 7.4.68 0 1.35-.09 2-.26-1.43.91-3.06 1.36-4.78 1.36-4.6 0-8.35-3.75-8.35-8.35 0-1.72.45-3.35 1.36-4.78z"/></svg>
-    </button>
-    
-    <div id="venom-container">
-        <div class="blob"></div><div class="blob"></div><div class="blob"></div><div class="blob"></div>
-    </div>
-    
-    <canvas id="space-canvas"></canvas>
-    
-    <div class="controls">
-        <button id="stopButton" class="icon-button" title="إيقاف الكل">
-            <svg viewBox="0 0 24 24"><path d="M6 6h12v12H6z"></path></svg>
-        </button>
-        <button id="talkButton" title="اضغط للتحدث">
-            <svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.49 6-3.31 6-6.72h-1.7z"/></svg>
-        </button>
-    </div>
-    
-    <svg style="position:absolute; width:0; height:0;"><defs><filter id="goo"><feGaussianBlur in="SourceGraphic" stdDeviation="15" result="blur" /><feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 20 -9" result="goo" /><feBlend in="SourceGraphic" in2="goo" /></filter></defs></svg>
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const searchInput = document.getElementById('searchInput');
+        const langSelect = document.getElementById('langSelect');
+        const resultsSidebar = document.getElementById('results-sidebar');
+        const mainContentViewer = document.getElementById('main-content-viewer');
+        const savedBtn = document.getElementById('savedBtn');
+        const shareModal = document.getElementById('shareModal');
+        const savedModal = document.getElementById('savedModal');
+        const welcomeMessageHTML = mainContentViewer.innerHTML;
 
-    <script type="module">
-        import { GoogleGenerativeAI } from "@google/generative-ai";
+        let allArticlesData = {};
 
-        // --- الخطوة الأهم: ضع مفتاح API الخاص بك هنا ---
-        const API_KEY = "AIzaSyAnAUCajzM7PqrM6k5znxaOAKs3R1kHzWk";
-        
-        const genAI = new GoogleGenerativeAI(API_KEY);
-        let model, chat;
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        const recognition = SpeechRecognition ? new SpeechRecognition() : null;
-        if (recognition) recognition.lang = 'ar-SA';
-        const synthesis = window.speechSynthesis;
-        
-        const talkButton = document.getElementById('talkButton'), stopButton = document.getElementById('stopButton');
-        const statusDiv = document.getElementById('status'), themeToggleButton = document.getElementById('theme-toggle');
-        const nameModal = document.getElementById('name-modal'), nameForm = document.getElementById('name-form'), nameInput = document.getElementById('name-input'), nameError = document.getElementById('name-error');
-        const blobs = document.querySelectorAll('.blob');
-        const canvas = document.getElementById('space-canvas'), ctx = canvas.getContext('2d');
+        // --- Save & Share & Language Logic ---
+        const getSavedArticles = () => JSON.parse(localStorage.getItem('savedArticles') || '[]');
+        const isArticleSaved = (pageid) => getSavedArticles().some(a => a.pageid == pageid);
+        const saveArticle = (article) => {
+            const saved = getSavedArticles();
+            if (!isArticleSaved(article.pageid)) saved.push(article);
+            localStorage.setItem('savedArticles', JSON.stringify(saved));
+        };
+        const removeArticle = (pageid) => {
+            let saved = getSavedArticles();
+            saved = saved.filter(a => a.pageid != pageid);
+            localStorage.setItem('savedArticles', JSON.stringify(saved));
+        };
+        const savedLang = localStorage.getItem('preferredLang');
+        if (savedLang) langSelect.value = savedLang;
+        langSelect.addEventListener('change', () => localStorage.setItem('preferredLang', langSelect.value));
 
-        let audioContext, analyser, animationFrameId, isListening = false, currentVolume = 0, userName = '';
-        let mousePos = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
-        let spaceAnimationId;
-        let animationActivity = 1.0; // للتحكم في سرعة حركة الكواكب
-
-        function initializeChat(name) {
-            userName = name;
-            model = genAI.getGenerativeModel({ 
-                model: "gemini-1.5-flash",
-                systemInstruction: `أنت مساعد ذكاء اصطناعي لطيف ومفيد. شخصيتك مرحة. أنت تتحدث مع شخص اسمه "${name}". خاطبه باسمه أحياناً لجعل الحوار ودوداً وشخصياً. ردودك دائماً باللغة العربية.`,
-            });
-            chat = model.startChat();
-        }
-
-        nameForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const name = nameInput.value.trim();
-            const nameParts = name.split(' ').filter(part => part.length > 0);
-            if (nameParts.length >= 2 && nameParts.length <= 3) {
-                localStorage.setItem('userName', name);
-                initializeChat(name);
-                nameModal.style.display = 'none';
-            } else {
-                nameError.textContent = 'الرجاء إدخال اسم ثنائي أو ثلاثي صحيح.';
-            }
-        });
-
-        window.addEventListener('load', () => {
-            const savedName = localStorage.getItem('userName');
-            if (savedName) {
-                initializeChat(savedName);
-                nameModal.style.display = 'none';
-            } else {
-                nameModal.style.display = 'flex';
-            }
-            const savedTheme = localStorage.getItem('theme') || 'light-theme';
-            setTheme(savedTheme);
-            animationLoop();
-        });
-
-        function setTheme(theme) {
-            document.body.className = theme;
-            localStorage.setItem('theme', theme);
-            if (theme === 'space-theme') {
-                if (!spaceAnimationId) initSpaceAnimation();
-            } else {
-                if (spaceAnimationId) {
-                    cancelAnimationFrame(spaceAnimationId);
-                    spaceAnimationId = null;
-                }
-            }
-        }
-        
-        themeToggleButton.addEventListener('click', () => {
-            const newTheme = document.body.classList.contains('light-theme') ? 'space-theme' : 'light-theme';
-            setTheme(newTheme);
-        });
-
-        document.addEventListener('mousemove', e => { mousePos = { x: e.clientX, y: e.clientY }; });
-
-        function animationLoop(time) {
-            if (document.body.classList.contains('light-theme')) {
-                blobs.forEach((blob, index) => {
-                    const rect = blob.getBoundingClientRect();
-                    const blobCenter = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
-                    const angle = time * 0.001 * (index * 0.5 + 1);
-                    const waveX = Math.sin(angle) * 20, waveY = Math.cos(angle) * 20;
-                    const volumeScale = 1 + (currentVolume / 128) * 0.5;
-                    blob.style.transform = `translate(${waveX}px, ${waveY}px) scale(${volumeScale})`;
-                });
-            }
-            animationFrameId = requestAnimationFrame(animationLoop);
-        }
-
-        let stars = [], planets = [];
-        function initSpaceAnimation() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-            stars = [];
-            planets = [];
-            for(let i = 0; i < 400; i++) {
-                stars.push({
-                    x: Math.random() * canvas.width, y: Math.random() * canvas.height,
-                    vx: (Math.random() - 0.5) * 0.2, vy: (Math.random() - 0.5) * 0.2,
-                    radius: Math.random() * 1.5, alpha: 0.5 + Math.random() * 0.5
-                });
-            }
-            const planetColors = ['#2e7d32', '#d32f2f', '#f57c00', '#5e35b1', '#0277bd'];
-            for(let i = 0; i < 5; i++) {
-                 planets.push({
-                    x: Math.random() * canvas.width, y: Math.random() * canvas.height,
-                    vx: (Math.random() - 0.5) * 0.1, vy: (Math.random() - 0.5) * 0.1,
-                    radius: Math.random() * 20 + 10, color: planetColors[i]
-                });
-            }
-
-            if (!spaceAnimationId) animateSpace();
-        }
-
-        function animateSpace() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            // تحديث مستوى النشاط بسلاسة
-            const targetActivity = isListening ? 4.0 : 1.0;
-            animationActivity += (targetActivity - animationActivity) * 0.05;
-
-            // رسم الكواكب
-            planets.forEach(p => {
-                p.x += p.vx * animationActivity;
-                p.y += p.vy * animationActivity;
-                if (p.x < -p.radius) p.x = canvas.width + p.radius; if (p.x > canvas.width + p.radius) p.x = -p.radius;
-                if (p.y < -p.radius) p.y = canvas.height + p.radius; if (p.y > canvas.height + p.radius) p.y = -p.radius;
-                
-                ctx.beginPath();
-                ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-                ctx.fillStyle = p.color;
-                ctx.shadowColor = p.color;
-                ctx.shadowBlur = 20;
-                ctx.fill();
-                ctx.shadowBlur = 0;
-            });
-            
-            // رسم النجوم
-            stars.forEach(star => {
-                const volumeBoost = 1 + (currentVolume / 128);
-                star.x += star.vx * volumeBoost * animationActivity;
-                star.y += star.vy * volumeBoost * animationActivity;
-                if (star.x < 0) star.x = canvas.width; if (star.x > canvas.width) star.x = 0;
-                if (star.y < 0) star.y = canvas.height; if (star.y > canvas.height) star.y = 0;
-                ctx.beginPath();
-                ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
-                ctx.fillStyle = `rgba(255, 255, 255, ${star.alpha})`;
-                ctx.fill();
-            });
-
-            spaceAnimationId = requestAnimationFrame(animateSpace);
-        }
-        window.addEventListener('resize', () => { if(document.body.classList.contains('space-theme')) initSpaceAnimation(); });
-        
-        const setupAudioAnalysis = async () => {
-            if (audioContext) return;
+        // --- Search Logic ---
+        const performSearch = async () => {
+            const query = searchInput.value.trim();
+            if (!query) return;
+            resultsSidebar.innerHTML = '<div class="loader"><div class="loader-inner"></div></div>';
+            mainContentViewer.innerHTML = welcomeMessageHTML;
             try {
-                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                audioContext = new AudioContext();
-                analyser = audioContext.createAnalyser();
-                analyser.fftSize = 256;
-                audioContext.createMediaStreamSource(stream).connect(analyser);
-                const updateVolume = () => {
-                    if (!analyser) return;
-                    const dataArray = new Uint8Array(analyser.frequencyBinCount);
-                    analyser.getByteFrequencyData(dataArray);
-                    currentVolume = dataArray.reduce((acc, val) => acc + val, 0) / dataArray.length;
-                    requestAnimationFrame(updateVolume);
-                };
-                updateVolume();
-            } catch (err) { statusDiv.textContent = "لا يمكن الوصول إلى المايكروفون."; }
+                const lang = langSelect.value;
+                const url = `https://${lang}.wikipedia.org/w/api.php?action=query&origin=*&format=json&generator=search&gsrnamespace=0&gsrlimit=5&gsrsearch=${encodeURIComponent(query)}&prop=extracts|pageimages&exintro=1&explaintext=1&piprop=thumbnail&pithumbsize=100`;
+                const response = await fetch(url);
+                const data = await response.json();
+                if (!data.query || !data.query.pages) throw new Error('لا توجد نتائج.');
+                
+                allArticlesData = data.query.pages;
+                resultsSidebar.innerHTML = '';
+                Object.values(allArticlesData).sort((a,b) => a.index - b.index).forEach(page => createResultCard(page));
+            } catch (error) { resultsSidebar.innerHTML = `<p>${error.message}</p>`; }
+        };
+
+        const createResultCard = (page) => {
+            const isSaved = isArticleSaved(page.pageid);
+            const container = document.createElement('div');
+            container.className = 'card-container';
+
+            const card = document.createElement('div');
+            card.className = 'result-card';
+            card.dataset.pageid = page.pageid;
+            card.innerHTML = `
+                <h3>${page.title}</h3>
+                <p>${page.extract ? page.extract.substring(0, 150) + '...' : ''}</p>
+                <div class="card-actions">
+                    <button class="share-btn">مشاركة</button>
+                    <button class="save-btn ${isSaved ? 'saved' : ''}">${isSaved ? 'محفوظ' : 'حفظ'}</button>
+                </div>`;
+            
+            container.appendChild(card);
+            resultsSidebar.appendChild(container);
+            
+            // Event Listeners
+            card.addEventListener('click', (e) => {
+                if (!e.target.closest('button')) {
+                    document.querySelectorAll('.result-card').forEach(c => c.classList.remove('active'));
+                    card.classList.add('active');
+                    displayDetails(page.pageid);
+                }
+            });
+            card.querySelector('.share-btn').addEventListener('click', () => showShareModal(page));
+            card.querySelector('.save-btn').addEventListener('click', (e) => {
+                const btn = e.target;
+                if(isArticleSaved(page.pageid)) {
+                    removeArticle(page.pageid);
+                    btn.textContent = 'حفظ';
+                    btn.classList.remove('saved');
+                } else {
+                    saveArticle({pageid: page.pageid, title: page.title, thumbnail: page.thumbnail ? page.thumbnail.source : ''});
+                    btn.textContent = 'محفوظ';
+                    btn.classList.add('saved');
+                }
+            });
+        };
+
+        const displayDetails = async (pageid) => {
+             mainContentViewer.innerHTML = '<div class="loader"><div class="loader-inner"></div></div>';
+            try {
+                const lang = langSelect.value;
+                const articleFromCache = allArticlesData[pageid];
+                const intelligentIconUrl = articleFromCache.thumbnail ? articleFromCache.thumbnail.source : '';
+
+                const url = `https://${lang}.wikipedia.org/w/api.php?action=query&origin=*&format=json&pageids=${pageid}&prop=extracts&explaintext=1`;
+                const response = await fetch(url);
+                const data = await response.json();
+                const pageData = data.query.pages[pageid];
+                const fullText = pageData.extract;
+                
+                mainContentViewer.innerHTML = `
+                    <div class="ai-insight-box">
+                         <div class="ai-insight-header">
+                            <img src="${intelligentIconUrl}" style="width:40px;height:40px;border-radius:8px;object-fit:cover;" alt="Icon">
+                            <h2>تحليل بالذكاء الاصطناعي</h2>
+                        </div>
+                        <div class="ai-tabs">
+                            <button class="ai-tab active" data-tab="summary">ملخص ذكي</button>
+                        </div>
+                        <div id="summary" class="ai-content active"></div>
+                    </div>
+                    <div class="section-divider">✦✦✦ النص الكامل ✦✦✦</div>
+                    <div class="details-text">
+                        ${fullText.split('\n\n').filter(p => p.trim() !== '').map(p => `<p>${p}</p>`).join('')}
+                    </div>`;
+
+                // Generate summary
+                const sentences = fullText.split('. ');
+                const summaryPoints = sentences.slice(0, 5).map(s => `<li>${s.trim()}.</li>`).join('');
+                document.getElementById('summary').innerHTML = `<ul class="ai-summary-list">${summaryPoints}</ul>`;
+
+            } catch (error) { mainContentViewer.innerHTML = `<p>Error: ${error.message}</p>`; }
+        };
+
+        // --- Modal Logic ---
+        const showShareModal = (page) => {
+             const shareUrl = `${window.location.origin}${window.location.pathname}?query=${encodeURIComponent(page.title)}&lang=${langSelect.value}`;
+             shareModal.querySelector('.modal-content').innerHTML = `
+                <h3>مشاركة "${page.title}"</h3>
+                <input type="text" value="${shareUrl}" readonly style="width:100%; padding:0.5rem; margin:1rem 0;">
+                <button id="copyBtn">نسخ الرابط</button>`;
+             shareModal.style.display = 'flex';
+             document.getElementById('copyBtn').onclick = () => navigator.clipboard.writeText(shareUrl).then(() => alert('تم النسخ!'));
         };
         
-        const speak = (text) => {
-            synthesis.cancel();
-            if (/[😂😄😆]/.test(text)) { text = "هاهاهاهاها"; }
-            const utterance = new SpeechSynthesisUtterance(text);
-            const arabicVoice = synthesis.getVoices().find(v => v.lang.startsWith('ar'));
-            if (arabicVoice) utterance.voice = arabicVoice;
-            utterance.onstart = () => { statusDiv.textContent = "يتحدث..."; };
-            utterance.onend = () => { if (!isListening) statusDiv.textContent = "اضغط للتحدث"; };
-            synthesis.speak(utterance);
-        };
+        savedBtn.addEventListener('click', () => {
+            const saved = getSavedArticles();
+            savedModal.querySelector('.modal-content').innerHTML = `
+                <h3>المقالات المحفوظة</h3>
+                <ul style="list-style:none; padding:1rem 0;">
+                    ${saved.length ? saved.map(a => `<li>${a.title}</li>`).join('') : '<p>لا يوجد شيء محفوظ.</p>'}
+                </ul>`;
+            savedModal.style.display = 'flex';
+        });
 
-        const handleInteraction = async () => {
-            if (isListening || !userName) return;
-            if (synthesis.speaking) synthesis.cancel();
-            await setupAudioAnalysis();
-            if (!recognition || !audioContext) {
-                statusDiv.textContent = "المتصفح لا يدعم التعرف على الصوت.";
-                return;
-            }
-            
-            isListening = true; talkButton.classList.add('listening');
-            statusDiv.textContent = `استمع إليك يا ${userName}...`;
-            
-            recognition.start();
-            recognition.onresult = async (event) => {
-                const transcript = event.results[0][0].transcript;
-                statusDiv.textContent = "لحظة، أفكر...";
-                try {
-                    const result = await chat.sendMessage(transcript);
-                    speak(result.response.text());
-                } catch (error) { speak("عذراً، حدث خطأ أثناء الاتصال بالذكاء الاصطناعي."); console.error("API Error:", error); }
-            };
-            recognition.onend = () => stopAllActivities(false);
-            recognition.onerror = (event) => stopAllActivities(true, event.error);
-        };
-
-        const stopAllActivities = (withError = false, errorMsg = '') => {
-            currentVolume = 0; isListening = false;
-            if (recognition) recognition.stop();
-            if (synthesis) synthesis.cancel();
-            talkButton.classList.remove('listening');
-            if (withError) { statusDiv.textContent = errorMsg === 'no-speech' ? "لم أسمع شيئًا، حاول مجدداً" : "حدث خطأ"; }
-            else if (!statusDiv.textContent.includes("يتحدث")) { statusDiv.textContent = "اضغط للتحدث"; }
-        };
-
-        talkButton.addEventListener('click', handleInteraction);
-        stopButton.addEventListener('click', () => stopAllActivities(false));
+        [shareModal, savedModal].forEach(modal => {
+            modal.addEventListener('click', (e) => { if (e.target === modal) modal.style.display = 'none'; });
+        });
+        
+        searchInput.addEventListener('keyup', e => e.key === 'Enter' && performSearch());
+    });
     </script>
 </body>
 </html>
